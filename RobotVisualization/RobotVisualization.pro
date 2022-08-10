@@ -1,3 +1,5 @@
+QT += bluetooth
+
 TEMPLATE = app
 CONFIG += console c++17
 CONFIG -= app_bundle
@@ -21,3 +23,5 @@ LIBS += -lOpenGL32 -lglu32
 HEADERS += \
     bluetooth.h \
     headers.h
+
+
