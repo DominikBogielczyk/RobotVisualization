@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">RobotControl</string>
+    <string name="pairedDevices">PAIRED DEVICES</string>
+    <string name="turnOn">TURN ON</string>
+    <string name="turnOff">TURN OFF</string>
+    <string name="getVisible">GET VISIBLE</string>
+    <string name="up">⇧</string>
+    <string name="down">⬇</string>
+    <string name="left">⬅</string>s
+    <string name="right">➡</string>
+    <string name="disconnect">disconnect</string>
+    <string name="read">read</string>
+
+
 </resources>

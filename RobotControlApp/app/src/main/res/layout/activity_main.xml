@@ -3,90 +3,106 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
-
+    android:layout_height="match_parent">
 
     <Button
-        android:id="@+id/button"
-        android:layout_width="@dimen/buttonWidth"
-        android:layout_height="@dimen/buttonHeight"
-        android:layout_marginEnd="275dp"
-        android:layout_marginBottom="@dimen/bottomMargin"
-        android:backgroundTint="@color/blue"
-        android:clickable="true"
-        android:onClick="turnOn"
-        android:text="Turn On"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="@dimen/buttonWidth"
-        android:layout_height="@dimen/buttonHeight"
-        android:layout_alignBottom="@+id/button"
-        android:layout_centerHorizontal="true"
-        android:layout_marginStart="275dp"
-        android:layout_marginBottom="@dimen/bottomMargin"
-        android:backgroundTint="@color/blue"
-        android:onClick="getVisible"
-        android:text="Get visible"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/button3"
+        android:id="@+id/buttonRead"
         android:layout_width="@dimen/doubleButtonWidth"
         android:layout_height="@dimen/buttonHeight"
-        android:backgroundTint="@color/blue"
-        android:onClick="listDevices"
-        android:text="Paired devices"
-        app:layout_constraintBottom_toTopOf="@+id/button4"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/button4"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/button4"
-        android:layout_width="@dimen/buttonWidth"
-        android:layout_height="@dimen/buttonHeight"
-        android:layout_below="@+id/button"
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
-        android:layout_marginBottom="@dimen/bottomMargin"
+        android:layout_marginTop="30dp"
         android:height="10dp"
         android:backgroundTint="@color/blue"
-        android:onClick="turnOff"
-        android:text="turn off"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:onClick="readComand"
+        android:text="@string/read"
+        android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <ListView
-        android:id="@+id/listView"
-        android:layout_width="wrap_content"
-        android:layout_height="@dimen/listHeight"
-        android:layout_marginBottom="@dimen/bottomMargin2"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button4" />
+        app:layout_constraintTop_toBottomOf="@+id/imageDown" />
 
     <ImageView
-        android:id="@+id/bluetoothImage"
-        android:layout_width="188dp"
-        android:layout_height="108dp"
-        android:layout_marginEnd="300dp"
-        app:layout_constraintBottom_toTopOf="@+id/button"
+        android:id="@+id/imageRight"
+        android:layout_width="@dimen/arrowWidth"
+        android:layout_height="@dimen/arrowHeight"
+        android:layout_marginEnd="50dp"
+        android:clickable="true"
+        android:contentDescription="@string/right"
+        app:layout_constraintBottom_toTopOf="@+id/imageDown"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageUp"
+        app:srcCompat="@drawable/right_icon"
+        app:tint="@color/blue" />
+
+    <ImageView
+        android:id="@+id/imageLeft"
+        android:layout_width="@dimen/arrowHeight"
+        android:layout_height="103dp"
+        android:layout_marginStart="50dp"
+        android:clickable="true"
+        android:contentDescription="@string/left"
+        android:rotationY="180"
+        app:layout_constraintBottom_toTopOf="@+id/imageDown"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageUp"
+        app:srcCompat="@drawable/right_icon"
+        app:tint="@color/blue" />
+
+    <ImageView
+        android:id="@+id/imageDown"
+        android:layout_width="@dimen/arrowWidth"
+        android:layout_height="@dimen/arrowHeight"
+        android:layout_marginTop="200dp"
+        android:clickable="true"
+        android:contentDescription="@string/down"
+        android:rotation="90"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageUp"
+        app:srcCompat="@drawable/right_icon"
+        app:tint="@color/blue" />
+
+    <ImageView
+        android:id="@+id/imageUp"
+        android:layout_width="@dimen/arrowWidth"
+        android:layout_height="@dimen/arrowHeight"
+        android:layout_marginTop="100dp"
+        android:clickable="true"
+        android:contentDescription="@string/up"
+        android:rotation="-90"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/bluetooth_image" />
+        app:srcCompat="@drawable/right_icon"
+        app:tint="@color/blue" />
+
+    <Button
+        android:id="@+id/buttonDisconnect"
+        android:layout_width="@dimen/doubleButtonWidth"
+        android:layout_height="@dimen/buttonHeight"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="200dp"
+        android:height="10dp"
+        android:backgroundTint="@color/blue"
+        android:onClick="disconnect"
+        android:text="@string/disconnect"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageDown" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/blue"
+        android:textSize="24sp"
+        app:layout_constraintBottom_toTopOf="@+id/buttonDisconnect"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonRead" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

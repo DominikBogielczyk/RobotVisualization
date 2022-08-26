@@ -2,8 +2,12 @@
 <resources>
     <dimen name="buttonWidth">126dp</dimen>
     <dimen name="buttonHeight">60dp</dimen>
-    <dimen name="doubleButtonWidth">260dp</dimen>
-    <dimen name="bottomMargin">475dp</dimen>
-    <dimen name="bottomMargin2">425dp</dimen>
+    <dimen name="doubleButtonWidth">200dp</dimen>
+    <dimen name="bottomMarginButtons">500dp</dimen>
+    <dimen name="betweenMargin">60dp</dimen>
+    <dimen name="bottomMarginList">200dp</dimen>
+    <dimen name="leftRightMargin">40dp</dimen>
     <dimen name="listHeight">150dp</dimen>
+    <dimen name="arrowWidth">120dp</dimen>
+    <dimen name="arrowHeight">100dp</dimen>
 </resources>
