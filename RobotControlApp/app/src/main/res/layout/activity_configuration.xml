@@ -11,26 +11,28 @@
         android:id="@+id/buttonTurnOn"
         android:layout_width="@dimen/buttonWidth"
         android:layout_height="@dimen/buttonHeight"
-        android:layout_marginStart="@dimen/leftRightMargin"
-        android:layout_marginBottom="@dimen/bottomMarginButtons"
+        android:layout_marginTop="@dimen/betweenMargin"
         android:backgroundTint="@color/blue"
         android:clickable="true"
         android:onClick="turnOn"
         android:text="@string/turnOn"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:textSize="@dimen/textSize"
+        app:layout_constraintEnd_toEndOf="@+id/bluetoothImage"
+        app:layout_constraintStart_toStartOf="@+id/bluetoothImage"
+        app:layout_constraintTop_toBottomOf="@+id/bluetoothImage" />
 
     <Button
         android:id="@+id/buttonPairedDevices"
-        android:layout_width="@dimen/doubleButtonWidth"
+        android:layout_width="@dimen/buttonWidth"
         android:layout_height="@dimen/buttonHeight"
-        android:layout_marginEnd="@dimen/leftRightMargin"
-        android:layout_marginBottom="@dimen/betweenMargin"
+        android:layout_marginTop="@dimen/betweenMargin"
         android:backgroundTint="@color/blue"
         android:onClick="listDevices"
         android:text="@string/pairedDevices"
-        app:layout_constraintBottom_toTopOf="@+id/buttonTurnOff"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:textSize="@dimen/textSize"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonTurnOff" />
 
     <Button
         android:id="@+id/buttonTurnOff"
@@ -39,34 +41,34 @@
         android:layout_below="@+id/buttonTurnOn"
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
-        android:layout_marginEnd="@dimen/leftRightMargin"
-        android:layout_marginBottom="@dimen/bottomMarginButtons"
+        android:layout_marginTop="@dimen/betweenMargin"
         android:height="10dp"
         android:backgroundTint="@color/blue"
         android:onClick="turnOff"
         android:text="@string/turnOff"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:textSize="@dimen/textSize"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonTurnOn" />
 
     <ListView
         android:id="@+id/listView"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:layout_marginTop="50dp"
-        android:layout_marginBottom="@dimen/bottomMarginList"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginTop="@dimen/betweenMargin"
+        android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonTurnOff" />
+        app:layout_constraintTop_toBottomOf="@+id/buttonPairedDevices" />
 
     <ImageView
         android:id="@+id/bluetoothImage"
-        android:layout_width="@dimen/buttonWidth"
-        android:layout_height="@dimen/buttonHeight"
-        android:layout_marginStart="@dimen/leftRightMargin"
-        android:layout_marginBottom="@dimen/betweenMargin"
-        app:layout_constraintBottom_toTopOf="@+id/buttonTurnOn"
+        android:layout_width="@dimen/bluetoothImageW"
+        android:layout_height="@dimen/bluetoothImageH"
+        android:layout_marginTop="@dimen/betweenMargin"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/bluetooth_image" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,11 +1,13 @@
 package com.example.robotcontrol
 
-import android.annotation.SuppressLint
+import android.Manifest
 import android.app.ProgressDialog
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
@@ -13,6 +15,10 @@ import android.view.MotionEvent
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.startActivity
+
+
 import java.io.IOException
 import java.util.*
 
@@ -26,6 +32,7 @@ class MainActivity : AppCompatActivity() {
         lateinit var bluetoothAdapter: BluetoothAdapter
         var isConnected: Boolean = false
         lateinit var clientAddress: String
+        lateinit var clientName: String
     }
 
     private val imageDown: ImageView
@@ -36,16 +43,22 @@ class MainActivity : AppCompatActivity() {
         get() = findViewById(R.id.imageLeft)
     private val imageRight: ImageView
         get() = findViewById(R.id.imageRight)
-
+    private val buttonRead: Button
+        get() = findViewById(R.id.buttonRead)
     private val textView: TextView
         get() = findViewById(R.id.textView)
+    private val infoText: TextView
+        get() = findViewById(R.id.info)
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        clientAddress = intent.getStringExtra(ConfigurationActivity.choosenAddress).toString()
 
-        //WHEN MAIN ACTIVITY OPEN THEN EXECUTE CONNECTION
+        clientAddress = intent.getStringExtra(ConfigurationActivity.choosenAddress).toString()
+        clientName = intent.getStringExtra(ConfigurationActivity.choosenName).toString()
+
+        //BEGIN CONNECTION
         ConnectThread(this).execute()
 
 
@@ -87,6 +100,9 @@ class MainActivity : AppCompatActivity() {
                 bluetoothSocket!!.outputStream.write(cmd.toByteArray())
             } catch (e: IOException) {
                 e.printStackTrace()
+                infoText.text = clientName + " connection failed"
+                infoText.setTextColor(this.resources.getColor(R.color.red))
+                changeVisibility(false)
             }
         }
     }
@@ -109,6 +125,9 @@ class MainActivity : AppCompatActivity() {
                 textView.text = text
             } catch (e: IOException) {
                 Log.i("info", "Reading failed")
+               // infoText.text = "Connection failed"
+               // infoText.setTextColor(this.resources.getColor(R.color.red))
+               // changeVisibility(false)
                 e.printStackTrace()
             }
         }
@@ -128,10 +147,21 @@ class MainActivity : AppCompatActivity() {
         finish()
     }
 
-    private class ConnectThread(c: Context) : AsyncTask<Void, Void, String>() {
+    fun changeVisibility(v: Boolean) {
+        if(!v)
+        {
+            imageDown.visibility = View.INVISIBLE
+            imageUp.visibility = View.INVISIBLE
+            imageLeft.visibility = View.INVISIBLE
+            imageRight.visibility = View.INVISIBLE
+            buttonRead.visibility = View.INVISIBLE
+        }
+
+    }
+
+    private inner class ConnectThread(c: Context) : AsyncTask<Void, Void, String>() {
         private var connectSuccess: Boolean = true
         private val context: Context
-
 
         init {
             this.context = c
@@ -142,13 +172,15 @@ class MainActivity : AppCompatActivity() {
             progressDialog = ProgressDialog.show(context, "Connecting in progress", "Wait a second")
         }
 
-        @SuppressLint("MissingPermission")
         override fun doInBackground(vararg p0: Void?): String? {
             //Connect as a client
             try {
-                if (bluetoothSocket == null || !isConnected) {
+              //  connectSuccess = true
+                if ((bluetoothSocket == null || !isConnected) && ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH)
+                    == PackageManager.PERMISSION_GRANTED) {
                     bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
                     val device: BluetoothDevice = bluetoothAdapter.getRemoteDevice(clientAddress)
+
                     bluetoothSocket = device.createRfcommSocketToServiceRecord(myUUID)
                     // Cancel discovery because it otherwise slows down the connection.
                     BluetoothAdapter.getDefaultAdapter().cancelDiscovery()
@@ -168,9 +200,15 @@ class MainActivity : AppCompatActivity() {
             super.onPostExecute(result)
             if (!connectSuccess) {
                 Log.i("info", "Connection failed")
+                this@MainActivity.infoText.text = clientName + " connection failed"
+                this@MainActivity.infoText.setTextColor(context.resources.getColor(R.color.red))
+                this@MainActivity.changeVisibility(false)
+
             } else {
                 Log.i("info", "Connection OK")
                 isConnected = true
+                this@MainActivity.infoText.text = clientName + " connection OK"
+                this@MainActivity.infoText.setTextColor(context.resources.getColor(R.color.green))
             }
             //TURN OFF PROGRESS DIALOG
             progressDialog.dismiss()
