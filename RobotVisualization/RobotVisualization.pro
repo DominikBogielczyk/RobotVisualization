@@ -1,12 +1,11 @@
-QT += bluetooth
+QT += widgets serialport
+requires(qtConfig(combobox))
 
 TEMPLATE = app
 CONFIG += console c++17
 CONFIG -= app_bundle
-CONFIG -= qt
 
 SOURCES += \
-        bluetooth.cpp \
         main.cpp
 
 INCLUDEPATH += "C:\Users\DELL\Desktop\Dominik\SFML\SFML-2.5.1\include"
@@ -21,7 +20,6 @@ CONFIG(debug, debug|release){
 LIBS += -lOpenGL32 -lglu32
 
 HEADERS += \
-    bluetooth.h \
     headers.h
 
 

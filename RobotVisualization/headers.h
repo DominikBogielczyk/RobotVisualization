@@ -10,6 +10,6 @@
 
 #include <GL/glu.h>
 
-//#include <QTBluetooth>
+#include <QtSerialPort>
 
 #endif // HEADERS_H
