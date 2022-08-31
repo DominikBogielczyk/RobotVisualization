@@ -285,11 +285,7 @@ void play()
         glEnable (GL_COLOR_MATERIAL);
 
         // draw stuff
-
         glPushMatrix();
-
-        readData = serial->readAll();
-        serial->waitForReadyRead(10);
 
         if(readData.toStdString().length()>0){
             movement = readData.toStdString();
@@ -354,7 +350,11 @@ void play()
 
         window.display();
 
+        readData = serial->readAll();
+        serial->waitForReadyRead(10);
+
         prev_time = clk.restart().asSeconds();
+
 
        // std::cout << eye_x << " " << eye_y << " " << eye_z << std::endl;
 
