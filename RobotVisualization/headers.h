@@ -4,6 +4,7 @@
 #pragma once
 #include <iostream>
 #include <cmath>
+#include "windows.h"
 
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
