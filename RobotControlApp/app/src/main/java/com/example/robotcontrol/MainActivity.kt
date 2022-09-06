@@ -6,17 +6,19 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.AsyncTask
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import android.widget.*
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 import java.io.IOException
@@ -50,6 +52,7 @@ class MainActivity : AppCompatActivity() {
     private val infoText: TextView
         get() = findViewById(R.id.info)
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -81,15 +84,22 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun onTouch(event: MotionEvent?, command: String): Boolean {
+        val currentTime = LocalDateTime.now()
+        val formattedTime = currentTime.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss.SSS"))
+
+        var text = " "
         when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
-                sendCommand(command)
+                text = formattedTime + " " + command
             }
             MotionEvent.ACTION_UP -> {
-                sendCommand("stop")
+                text = formattedTime + " stop"
             }
         }
+        var size = text.toByteArray().size
+        sendCommand("$text $size bytes")
         Log.i("info", event.toString())
         return true
     }
