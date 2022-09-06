@@ -86,16 +86,17 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun onTouch(event: MotionEvent?, command: String): Boolean {
-        val currentTime = LocalDateTime.now()
-        val formattedTime = currentTime.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss.SSS"))
+        //val currentTime = LocalDateTime.now()
+        //val formattedTime = currentTime.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss.SSS"))
+        val formattedTime : Long = System.currentTimeMillis()
 
         var text = " "
         when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
-                text = formattedTime + " " + command
+                text = formattedTime.toString() + " " + command
             }
             MotionEvent.ACTION_UP -> {
-                text = formattedTime + " stop"
+                text = formattedTime.toString() + " stop"
             }
         }
         var size = text.toByteArray().size
