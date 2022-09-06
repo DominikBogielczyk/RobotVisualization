@@ -1,7 +1,9 @@
 #include "headers.h"
 
 #define PI 3.14159265
-#define port "COM7"
+#define port "COM3"
+
+
 
 
 void draw_robot(double size_x, double size_y, double size_z, double middle_z)
@@ -238,8 +240,15 @@ void play()
 
     sf::Clock clk;
 
-    std::string movement;
+    std::string input;
     QByteArray readData;
+    std::vector<std::string> data{};
+
+    size_t  posOfSpace = 0;
+    std::string space = " ";
+    std::string dataToCut;
+    long long sendTime;
+    long long delay;
 
     QSerialPort *serial = new QSerialPort();
     serial->setPortName(port);
@@ -287,21 +296,17 @@ void play()
         // draw stuff
         glPushMatrix();
 
-        if(readData.toStdString().length()>0){
-            movement = readData.toStdString();
-        }
-
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || movement == "left") {
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || input.find("left") != std::string::npos) {
             rot_z -=  (clk.restart().asSeconds() - prev_time) * angular_velocity;
         }
-        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || movement == "right") {
+        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || input.find("right") != std::string::npos) {
             rot_z +=  (clk.restart().asSeconds() - prev_time) * angular_velocity;
         }
-        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || movement == "up") {
+        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || input.find("up") != std::string::npos) {
             move_x +=  (clk.restart().asSeconds() - prev_time) * linear_velocity * cos (rot_z*PI/180);
             move_y +=  (clk.restart().asSeconds() - prev_time) * linear_velocity * sin (rot_z*PI/180);
         }
-        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || movement == "down") {
+        else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || input.find("down") != std::string::npos) {
             move_x -=  (clk.restart().asSeconds() - prev_time) * linear_velocity * cos (rot_z*PI/180);
             move_y -=  (clk.restart().asSeconds() - prev_time) * linear_velocity * sin (rot_z*PI/180);
         }
@@ -353,10 +358,37 @@ void play()
         readData = serial->readAll();
         serial->waitForReadyRead(10);
 
+        auto receiveTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+
+
+        if(readData.toStdString().length()>0){
+            input = readData.toStdString();
+
+            dataToCut = input;
+
+
+            while ((posOfSpace = dataToCut.find(space)) != std::string::npos) {
+                    data.push_back(dataToCut.substr(0, posOfSpace));
+                    dataToCut.erase(0, posOfSpace + space.length());
+                }
+
+           sendTime = std::stoll(data[0]);
+
+           delay = receiveTime - sendTime;
+
+           std::cout<<sendTime<<"-"<<receiveTime<<std::endl;
+           std::cout<<"Delay: "<<delay<<std::endl;
+           posOfSpace = 0;
+           data.clear();
+
+        }
+
+
+        //sendTime = std::stol(data[0]);
+
         prev_time = clk.restart().asSeconds();
 
-
-       // std::cout << eye_x << " " << eye_y << " " << eye_z << std::endl;
+        // std::cout << eye_x << " " << eye_y << " " << eye_z << std::endl;
 
     }
 
