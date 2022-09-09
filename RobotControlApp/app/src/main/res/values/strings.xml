@@ -9,7 +9,7 @@
     <string name="left">⬅</string>s
     <string name="right">➡</string>
     <string name="disconnect">disconnect</string>
-    <string name="read">read</string>
+    <string name="clear">clear</string>
 
 
 </resources>
