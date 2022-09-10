@@ -1,17 +1,68 @@
 #include "headers.h"
 
 #define PI 3.14159265
-#define port "COM3"
+#define port "COM7"
 
-
-
-
-void draw_robot(double size_x, double size_y, double size_z, double middle_z)
+void draw_circle(int x, int y, double radius, double width, double rot, char color, double dz=0.0)
 {
-    double half_size_x = size_x / 2.0;
-    double half_size_y = size_y / 2.0;
-    double half_size_z = size_z / 2.0;
 
+    switch(color)
+    {
+    case 'g':
+        glColor3d(0.5, 0.5, 0.4); //GREY
+        break;
+    case 'b':
+        glColor3d(0.0, 0.0, 0.0); //BLACK
+        break;
+    case 't':
+        glColor4d(0.5, 0.5, 0.4, 0.0); //TRANSPARENT
+        break;
+    }
+
+    glPushMatrix();
+    glRotated(rot, 1.0, 0.0, 0.0);
+    glRotated(0, 0.0, 1.0, 0.0);
+    glRotated(0, 0, 0.0, 1.0);
+
+    int num = 40;
+
+    //glPopMatrix();
+
+    glBegin(GL_TRIANGLE_FAN); //BEGIN CIRCLE
+    glVertex3f(x, y, radius); // center of circle
+    for (int i = 0; i <= num; i++)
+    {
+        glVertex3f (x + radius * cos(i * 2 * PI / num), y, radius + radius * sin(i * 2 * PI / num) + dz);
+    }
+    glEnd(); //END
+
+    glBegin(GL_QUAD_STRIP); //BEGIN CIRCLE
+    for (int i = 0; i <= num; i++)
+    {
+        glVertex3f (x + radius * cos(i * 2 * PI / num), y, radius + radius * sin(i * 2 * PI / num) + dz);
+        glVertex3f (x + radius * cos(i * 2 * PI / num), y + width, radius + radius * sin(i * 2 * PI / num) + dz);
+        glVertex3f (x + radius * cos((i+1) * 2 * PI / num), y, radius + radius * sin((i+1) * 2 * PI / num) + dz);
+        glVertex3f (x + radius * cos((i+1) * 2 * PI / num), y + width, radius + radius * sin((i+1) * 2 * PI / num) + dz);
+    }
+    glEnd(); //END
+
+    glBegin(GL_TRIANGLE_FAN); //BEGIN CIRCLE
+    glVertex3f(x, y, radius); // center of circle
+    for (int i = 0; i <= num; i++)
+    {
+        glVertex3f (x + radius * cos(i * 2 * PI / num), y + width, radius + radius * sin(i * 2 * PI / num) + dz);
+    }
+    glEnd(); //END
+}
+
+
+void draw_cube(double robot_size_x, double robot_size_y, double robot_size_z, double middle_z)
+{
+    double half_size_x = robot_size_x / 2.0;
+    double half_size_y = robot_size_y / 2.0;
+    double half_size_z = robot_size_z / 2.0;
+
+    //glColor3d(0.5, 0.5, 0.4); //GREY
     // bottom
     glBegin(GL_POLYGON);
     glVertex3d(-half_size_x, half_size_y, middle_z - half_size_z);
@@ -21,7 +72,6 @@ void draw_robot(double size_x, double size_y, double size_z, double middle_z)
     glEnd();
 
     // top
-    glColor3d(0, 1.0, 0.0);
     glBegin(GL_POLYGON);
     glVertex3d(-half_size_x, half_size_y, middle_z + half_size_z);
     glVertex3d(half_size_x, half_size_y, middle_z + half_size_z);
@@ -30,7 +80,6 @@ void draw_robot(double size_x, double size_y, double size_z, double middle_z)
     glEnd();
 
     // left
-    glColor3d(1.0, 1.0, 0.0);
     glBegin(GL_POLYGON);
     glVertex3d(-half_size_x, -half_size_y, middle_z + half_size_z);
     glVertex3d(-half_size_x, half_size_y, middle_z + half_size_z);
@@ -39,7 +88,6 @@ void draw_robot(double size_x, double size_y, double size_z, double middle_z)
     glEnd();
 
     // right
-    glColor3d(1.0, 0.0, 0.0);
     glBegin(GL_POLYGON);
     glVertex3d(half_size_x, -half_size_y, middle_z + half_size_z);
     glVertex3d(half_size_x, half_size_y, middle_z + half_size_z);
@@ -48,7 +96,6 @@ void draw_robot(double size_x, double size_y, double size_z, double middle_z)
     glEnd();
 
     // front
-    glColor3d(0.0, 1.0, 0.0);
     glBegin(GL_POLYGON);
     glVertex3d(-half_size_x, -half_size_y, middle_z + half_size_z);
     glVertex3d(half_size_x, -half_size_y, middle_z + half_size_z);
@@ -57,54 +104,52 @@ void draw_robot(double size_x, double size_y, double size_z, double middle_z)
     glEnd();
 
     // back
-    glColor3d(0.0, 1.0, 0.0);
     glBegin(GL_POLYGON);
     glVertex3d(-half_size_x, half_size_y, middle_z + half_size_z);
     glVertex3d(half_size_x, half_size_y, middle_z + half_size_z);
     glVertex3d(half_size_x, half_size_y, middle_z - half_size_z);
     glVertex3d(-half_size_x, half_size_y, middle_z - half_size_z);
     glEnd();
+
 }
 
-
-
-void draw_circle(int x, int y, int num, double radius, double width)
+void draw_robot()
 {
+    const double robot_radius = 20.0;
+    const double robot_height = 12.0;
 
-    glColor3d(0.0, 0.0, 0.0); //BLACK
+    const double from_ground = 3.0;
 
-    glBegin(GL_TRIANGLE_FAN); //BEGIN CIRCLE
-    glVertex3f(x, y, radius); // center of circle
-    for (int i = 0; i <= num; i++)
-    {
-        glVertex3f (x + radius * cos(i * 2 * PI / num), y, radius + radius * sin(i * 2 * PI / num));
-    }
-    glEnd(); //END
+    const double wheel_width = 1.0;
+    const double wheel_radius = robot_height - from_ground;
 
-    glBegin(GL_QUAD_STRIP); //BEGIN CIRCLE
-    for (int i = 0; i <= num; i++)
-    {
-        glVertex3f (x + radius * cos(i * 2 * PI / num), y, radius + radius * sin(i * 2 * PI / num));
-        glVertex3f (x + radius * cos(i * 2 * PI / num), y + width, radius + radius * sin(i * 2 * PI / num));
-        glVertex3f (x + radius * cos((i+1) * 2 * PI / num), y, radius + radius * sin((i+1) * 2 * PI / num));
-        glVertex3f (x + radius * cos((i+1) * 2 * PI / num), y + width, radius + radius * sin((i+1) * 2 * PI / num));
-    }
-    glEnd(); //END
-
-    glBegin(GL_TRIANGLE_FAN); //BEGIN CIRCLE
-    glVertex3f(x, y, radius); // center of circle
-    for (int i = 0; i <= num; i++)
-    {
-        glVertex3f (x + radius * cos(i * 2 * PI / num), y + width, radius + radius * sin(i * 2 * PI / num));
-    }
-    glEnd(); //END
+    //BOX
+    glColor3d(169/255.0, 169/255.0, 169/255.0);
+    draw_cube(robot_radius, 2/1.5*robot_radius, 2 * wheel_radius - from_ground-1, wheel_radius+from_ground);
+    //LEFT WHEEL
+    draw_circle(0, -robot_radius/1.25, wheel_radius, wheel_width, 0.0, 'b'); //int x, int y, double radius, double width, double rot, char color
+    //WHEEL AXLE
+    draw_circle(0, -robot_radius/1.25, 2.0, 2*robot_radius/1.25, 0.0, 'b', wheel_radius);
+    //RIGHT WHEEL
+    draw_circle(0, robot_radius/1.25, wheel_radius, wheel_width, 0.0, 'b');
+    //MIDDLE WHEEL
+    draw_circle(-robot_radius/1.5, 0, 3.0, wheel_width, 0.0, 'b');
+    //TRANSPARENT
+    draw_circle(0, -robot_radius/1.25-7.5, wheel_radius, 10, 0.0, 't', 0.0); //int x, int y, double radius, double width, double rot, char color
+    draw_circle(0, robot_radius/1.25-2.5, wheel_radius, robot_radius, 0.0, 't');
+    draw_circle(-robot_radius/1.5, -wheel_width, 4.5, 3*wheel_width, 0.0, 't');
+    //BOTTOM
+    draw_circle(0, from_ground, robot_radius, 2.0, 90.0, 'g', -robot_radius); //(int x, int y, double radius, double width)
+    //TOP
+    draw_circle(0, 2 * wheel_radius + 1, robot_radius, 2.0, 0.0, 'g', -robot_radius);
 
 }
 
 void draw_floor(double width, double length)
 {
     glBegin(GL_POLYGON);
-    glColor3d(225.0/255, 225.0/255, 208.0/255);
+    //glColor3d(225.0/255, 225.0/255, 208.0/255);
+    glColor4d(0.5, 0.6, 0.4, 0.7);
     glVertex3d(-width/2, length/2, 0);
     glVertex3d(width/2, length/2, 0);
     glVertex3d(width/2, -length/2, 0);
@@ -191,17 +236,10 @@ void play()
     const float angular_velocity = 60.0;
     const float camera_velocity = 150.0;
 
-
     //1200cm x 800cm x 250cm
     const double room_width = 1200.0;
     const double room_length = 800.0;
     const double room_height = 250.0;
-
-    const double robot_size_x = 14.0;
-    const double robot_size_y = 20.0;
-    const double robot_size_z = 10.0;
-    const double wheel_width = 1.0;
-    const double wheel_radius = 8.0;
 
 
     // set viewport according to current window size
@@ -210,8 +248,12 @@ void play()
     glClearColor(0, 0, 0, 1);
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_SMOOTH);
+    glEnable(GL_POLYGON_SMOOTH);
+    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
     glShadeModel(GL_SMOOTH);
+    glEnable(GL_NORMALIZE);
 
     // setup lights
 
@@ -230,13 +272,12 @@ void play()
     GLfloat global_ambient[] = {0.3, 0.3, 0.3, 0.1};
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
 
-    glEnable(GL_NORMALIZE) ;
+
 
     // load resources, initialize the OpenGL states, ...
 
     // run the main loop
     bool running = true;
-    float scale = 1.0;
 
     sf::Clock clk;
 
@@ -267,8 +308,6 @@ void play()
         qDebug() << serial->errorString();
     }
 
-
-
     while (running) {
         // handle events
         sf::Event event;
@@ -280,12 +319,6 @@ void play()
                 // adjust the viewport when the window is resized
                  set_viewport(window.getSize().x, window.getSize().y, eye_x, eye_y, eye_z, move_x, move_y, 0);
             }
-
-            else if (sf::Event::MouseWheelScrolled) {
-              //  scale += event.mouseWheelScroll.delta * 0.2;
-                //std::cout << event.mouseWheelScroll.x << std::endl;
-
-        }
         }
 
         // clear the buffers
@@ -339,17 +372,8 @@ void play()
         glRotated(0, 0.0, 1.0, 0.0);
         glRotated(rot_z, 0, 0.0, 1.0);
 
-
-       // glScaled(scale, scale, scale);
-
-        //LEFT WHEEL
-        draw_circle(0, -(robot_size_y/2 + 1) - wheel_width, 40, wheel_radius, wheel_width); //(int x, int y, int num, double radius, double width)
-
-        //RIGHT WHEEL
-        draw_circle(0, robot_size_y/2 + 1, 40, wheel_radius, wheel_width);
-
         //ROBOT
-        draw_robot(robot_size_x, robot_size_y, robot_size_z, wheel_radius + robot_size_z/3); //(double size, double middle_z)
+        draw_robot();
 
         glPopMatrix();
 
