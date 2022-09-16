@@ -1,7 +1,7 @@
 #include "headers.h"
 
 #define PI 3.14159265
-#define port "COM7"
+#define port "COM3"
 
 void draw_circle(int x, int y, double radius, double width, double rot, char color, double dz=0.0)
 {
@@ -230,6 +230,8 @@ void play()
     float rot_z = 0;
     float move_x = 0;
     float move_y = 0;
+    float prev_x = 0;
+    float prev_y = 0;
     float prev_time = 0;
 
     const float linear_velocity = 200.0;
@@ -240,6 +242,8 @@ void play()
     const double room_width = 1200.0;
     const double room_length = 800.0;
     const double room_height = 250.0;
+
+    const double robot_radius = 20.0;
 
 
     // set viewport according to current window size
@@ -336,12 +340,35 @@ void play()
             rot_z +=  (clk.restart().asSeconds() - prev_time) * angular_velocity;
         }
         else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || input.find("up") != std::string::npos) {
+            if(abs(move_x-(room_width/2)) > robot_radius &&  abs(move_x+(room_width/2)) > robot_radius){
+            prev_x = move_x;
             move_x +=  (clk.restart().asSeconds() - prev_time) * linear_velocity * cos (rot_z*PI/180);
+            } else {
+            move_x = prev_x;
+            }
+            if(abs(move_y-(room_length/2)) > robot_radius &&  abs(move_y+(room_length/2)) > robot_radius){
+            prev_y = move_y;
             move_y +=  (clk.restart().asSeconds() - prev_time) * linear_velocity * sin (rot_z*PI/180);
+            } else {
+            move_y = prev_y;
+            }
+
+            std::cout<<move_x<<" - "<<move_y<<std::endl;
         }
         else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || input.find("down") != std::string::npos) {
+            if(abs(move_x-(room_width/2)) > robot_radius &&  abs(move_x+(room_width/2)) > robot_radius){
+            prev_x = move_x;
             move_x -=  (clk.restart().asSeconds() - prev_time) * linear_velocity * cos (rot_z*PI/180);
+            } else {
+            move_x = prev_x;
+            }
+            if(abs(move_y-(room_length/2)) > robot_radius &&  abs(move_y+(room_length/2)) > robot_radius){
+            prev_y = move_y;
             move_y -=  (clk.restart().asSeconds() - prev_time) * linear_velocity * sin (rot_z*PI/180);
+            } else {
+            move_y = prev_y;
+            }
+            std::cout<<move_x<<" - "<<move_y<<std::endl;
         }
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::U)) {
             eye_x +=  (clk.restart().asSeconds() - prev_time) * camera_velocity;
@@ -406,7 +433,6 @@ void play()
            data.clear();
 
         }
-
 
         //sendTime = std::stol(data[0]);
 
