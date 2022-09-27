@@ -5,13 +5,15 @@
     <dimen name="bluetoothImageW">150dp</dimen>
     <dimen name="bluetoothImageH">100dp</dimen>
     <dimen name="betweenMargin">20dp</dimen>
-    <dimen name="betweenMarginBig">150dp</dimen>
+    <dimen name="betweenMarginBig">130dp</dimen>
     <dimen name="margin">60dp</dimen>
     <dimen name="bottomMarginList">200dp</dimen>
     <dimen name="leftRightMargin">40dp</dimen>
     <dimen name="listHeight">150dp</dimen>
     <dimen name="arrowWidth">120dp</dimen>
     <dimen name="arrowHeight">100dp</dimen>
+    <dimen name="cameraWidth">100dp</dimen>
+    <dimen name="cameraHeight">100dp</dimen>
     <dimen name="textSize">18dp</dimen>
     <dimen name="textSizeBig">22dp</dimen>
 </resources>

@@ -435,6 +435,7 @@ void play() {
       std::cout << robot.x << " - " << robot.y << std::endl;
     }
 
+
     //camera movement
     cameraHandling(clk, prev_time, camera.type, false);
 
@@ -462,6 +463,12 @@ void play() {
 
     if (readData.toStdString().length() > 0) {
       input = readData.toStdString();
+
+      //RECEIVED COMMAND "CAMERA" - CHANGE CAMERA
+      if(input.find("camera") != std::string::npos)
+      {
+          cameraHandling(clk, prev_time, camera.type, true);
+      }
 
       dataToCut = input;
 

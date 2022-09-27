@@ -44,6 +44,8 @@ class MainActivity : AppCompatActivity() {
         get() = findViewById(R.id.imageLeft)
     private val imageRight: ImageView
         get() = findViewById(R.id.imageRight)
+    private val imageCamera: ImageView
+        get() = findViewById(R.id.imageCamera)
     private val textView: TextView
         get() = findViewById(R.id.textView)
     private val infoText: TextView
@@ -65,19 +67,23 @@ class MainActivity : AppCompatActivity() {
 
 
         imageDown.setOnTouchListener { v: View, m: MotionEvent ->
-            onTouch(m, "down")
+            onTouch(m, "down", sendStop = true)
             true
         }
         imageUp.setOnTouchListener { v: View, m: MotionEvent ->
-            onTouch(m, "up")
+            onTouch(m, "up", sendStop = true)
             true
         }
         imageLeft.setOnTouchListener { v: View, m: MotionEvent ->
-            onTouch(m, "left")
+            onTouch(m, "left", sendStop = true)
             true
         }
         imageRight.setOnTouchListener { v: View, m: MotionEvent ->
-            onTouch(m, "right")
+            onTouch(m, "right", sendStop = true)
+            true
+        }
+        imageCamera.setOnTouchListener { v: View, m: MotionEvent ->
+            onTouch(m, "camera", sendStop = false)
             true
         }
         buttonClear.setOnClickListener {
@@ -90,7 +96,7 @@ class MainActivity : AppCompatActivity() {
 
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun onTouch(event: MotionEvent?, command: String): Boolean {
+    private fun onTouch(event: MotionEvent?, command: String, sendStop: Boolean): Boolean {
         //val currentTime = LocalDateTime.now()
         //val formattedTime = currentTime.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss.SSS"))
         val formattedTime: Long = System.currentTimeMillis()
@@ -104,9 +110,12 @@ class MainActivity : AppCompatActivity() {
                 sendCommand("$text $size bytes")
             }
             MotionEvent.ACTION_UP -> {
-                text = formattedTime.toString() + " stop"
-                size = text.toByteArray().size
-                sendCommand("$text $size bytes")
+                if(sendStop)
+                {
+                    text = formattedTime.toString() + " stop"
+                    size = text.toByteArray().size
+                    sendCommand("$text $size bytes")
+                }
             }
         }
 
