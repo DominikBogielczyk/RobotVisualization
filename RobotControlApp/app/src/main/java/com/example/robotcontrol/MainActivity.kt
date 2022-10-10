@@ -18,6 +18,7 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.google.android.material.slider.Slider
 
 
 import java.io.IOException
@@ -52,11 +53,16 @@ class MainActivity : AppCompatActivity() {
         get() = findViewById(R.id.delayTextView)
     private val infoText: TextView
         get() = findViewById(R.id.info)
-    private val buttonClear: Button
-        get() = findViewById(R.id.buttonClear)
+    private val modeButton: ToggleButton
+        get() = findViewById(R.id.modeButton)
+    private val test: TextView
+        get() = findViewById(R.id.test)
+    private val slider: Slider
+        get() = findViewById(R.id.slider)
 
     private var cmdIndex = 0
     private var cmdTime: Long = 0
+    private var velocity: Float = 5.0F
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -70,30 +76,53 @@ class MainActivity : AppCompatActivity() {
         //BEGIN CONNECTION
         ConnectThread(this).execute()
 
-
+        var textToSend = ""
         imageDown.setOnTouchListener { v: View, m: MotionEvent ->
-            onTouch(m, "down", sendStop = true)
+            textToSend = "wp" + (-velocity).toString() + "wl" + (-velocity).toString()
+            onTouch(m, textToSend, sendStop = true)
             true
         }
         imageUp.setOnTouchListener { v: View, m: MotionEvent ->
-            onTouch(m, "up", sendStop = true)
+            textToSend = "wp" + velocity.toString() + "wl" + velocity.toString()
+            onTouch(m, textToSend, sendStop = true)
             true
         }
         imageLeft.setOnTouchListener { v: View, m: MotionEvent ->
-            onTouch(m, "left", sendStop = true)
+            textToSend = "wp" + velocity.toString() + "wl" + (-velocity).toString()
+            onTouch(m, textToSend, sendStop = true)
             true
         }
         imageRight.setOnTouchListener { v: View, m: MotionEvent ->
-            onTouch(m, "right", sendStop = true)
+            textToSend = "wp" + (-velocity).toString() + "wl" + velocity.toString()
+            onTouch(m, textToSend, sendStop = true)
             true
         }
         imageCamera.setOnTouchListener { v: View, m: MotionEvent ->
             onTouch(m, "camera", sendStop = false)
             true
         }
-        buttonClear.setOnClickListener {
-            clear()
+        modeButton.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                changeVisibility(1)
+            } else {
+                changeVisibility(2)
+            }
         }
+        slider.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+            override fun onStartTrackingTouch(slider: Slider) {
+                //
+            }
+
+            override fun onStopTrackingTouch(slider: Slider) {
+                //
+            }
+        })
+
+        slider.addOnChangeListener { slider, value, fromUser ->
+            velocity = slider.value
+            test.text = velocity.toString()
+        }
+
 
         readTimer()
 
@@ -115,7 +144,7 @@ class MainActivity : AppCompatActivity() {
             }
             MotionEvent.ACTION_UP -> {
                 if (sendStop) {
-                    text = "stop"
+                    text = "wp0.0wl0.0"
                     size = text.toByteArray().size.toString() + "B"
                     sendCommand("$text;$cmdIndex;$size")
                     cmdTime = System.currentTimeMillis()
@@ -137,7 +166,7 @@ class MainActivity : AppCompatActivity() {
                 e.printStackTrace()
                 infoText.text = clientName + " connection failed"
                 infoText.setTextColor(this.resources.getColor(R.color.red))
-                changeVisibility(false)
+                changeVisibility(0)
             }
         }
     }
@@ -163,7 +192,7 @@ class MainActivity : AppCompatActivity() {
                         textView.text = "Collision !!!"
                         textView.setTextColor(getResources().getColor(R.color.red))
                     } else if ("ok" in text) {
-                        textView.text = "Movement OK"
+                        textView.text = "OK"
                         textView.setTextColor(getResources().getColor(R.color.green))
                     }
                     if (text.contains("[0-9]".toRegex())) {
@@ -171,7 +200,7 @@ class MainActivity : AppCompatActivity() {
                         for (i in 0..9) {
                             if (i.toString() in text) {
                                 var t = System.currentTimeMillis() - cmdTime
-                                delayTextView.text = t.toString() + "ms"
+                                delayTextView.text = t.toString() + " ms"
                             }
                         }
                     }
@@ -206,13 +235,26 @@ class MainActivity : AppCompatActivity() {
         finish()
     }
 
-    fun changeVisibility(v: Boolean) {
-        if (!v) {
-            imageDown.visibility = View.INVISIBLE
-            imageUp.visibility = View.INVISIBLE
-            imageLeft.visibility = View.INVISIBLE
-            imageRight.visibility = View.INVISIBLE
-            buttonClear.visibility = View.INVISIBLE
+    fun changeVisibility(v: Int) {
+        when (v) {
+            0 -> {
+                imageDown.visibility = View.INVISIBLE
+                imageUp.visibility = View.INVISIBLE
+                imageLeft.visibility = View.INVISIBLE
+                imageRight.visibility = View.INVISIBLE
+            }
+            1 -> {
+                imageDown.visibility = View.INVISIBLE
+                imageUp.visibility = View.INVISIBLE
+                imageLeft.visibility = View.INVISIBLE
+                imageRight.visibility = View.INVISIBLE
+            }
+            2 -> {
+                imageDown.visibility = View.VISIBLE
+                imageUp.visibility = View.VISIBLE
+                imageLeft.visibility = View.VISIBLE
+                imageRight.visibility = View.VISIBLE
+            }
         }
 
     }
@@ -278,7 +320,7 @@ class MainActivity : AppCompatActivity() {
                 Log.i("info", "Connection failed")
                 this@MainActivity.infoText.text = clientName + " connection failed"
                 this@MainActivity.infoText.setTextColor(context.resources.getColor(R.color.red))
-                this@MainActivity.changeVisibility(false)
+                this@MainActivity.changeVisibility(0)
 
             } else {
                 Log.i("info", "Connection OK")

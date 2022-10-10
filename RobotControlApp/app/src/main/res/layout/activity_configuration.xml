@@ -16,7 +16,7 @@
         android:clickable="true"
         android:onClick="turnOn"
         android:text="@string/turnOn"
-        android:textSize="@dimen/textSize"
+        android:textSize="@dimen/textSizeBig"
         app:layout_constraintEnd_toEndOf="@+id/bluetoothImage"
         app:layout_constraintStart_toStartOf="@+id/bluetoothImage"
         app:layout_constraintTop_toBottomOf="@+id/bluetoothImage" />
@@ -29,7 +29,7 @@
         android:backgroundTint="@color/blue"
         android:onClick="listDevices"
         android:text="@string/pairedDevices"
-        android:textSize="@dimen/textSize"
+        android:textSize="@dimen/textSizeBig"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonTurnOff" />
@@ -46,7 +46,7 @@
         android:backgroundTint="@color/blue"
         android:onClick="turnOff"
         android:text="@string/turnOff"
-        android:textSize="@dimen/textSize"
+        android:textSize="@dimen/textSizeBig"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonTurnOn" />

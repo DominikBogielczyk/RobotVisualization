@@ -23,22 +23,6 @@
         app:srcCompat="@drawable/camera_icon"
         app:tint="@color/blue" />
 
-    <Button
-        android:id="@+id/buttonClear"
-        android:layout_width="@dimen/buttonWidth"
-        android:layout_height="@dimen/buttonHeight"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentLeft="true"
-        android:layout_marginTop="@dimen/betweenMargin"
-        android:height="10dp"
-        android:backgroundTint="@color/blue"
-        android:text="@string/clear"
-        android:textSize="@dimen/textSize"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imageDown" />
-
     <ImageView
         android:id="@+id/imageRight"
         android:layout_width="@dimen/arrowWidth"
@@ -70,7 +54,7 @@
         android:id="@+id/imageDown"
         android:layout_width="@dimen/arrowWidth"
         android:layout_height="@dimen/arrowHeight"
-        android:layout_marginTop="@dimen/betweenMarginBig"
+        android:layout_marginTop="100dp"
         android:clickable="true"
         android:contentDescription="@string/down"
         android:rotation="90"
@@ -100,13 +84,12 @@
         android:layout_height="@dimen/buttonHeight"
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
-        android:layout_marginTop="200dp"
-        android:layout_marginBottom="@dimen/betweenMargin"
+        android:layout_marginTop="300dp"
         android:height="10dp"
         android:backgroundTint="@color/blue"
         android:onClick="disconnect"
         android:text="@string/disconnect"
-        android:textSize="@dimen/textSize"
+        android:textSize="@dimen/textSizeBig"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
@@ -118,13 +101,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="30dp"
-        android:text="Movement OK"
+        android:text="OK"
         android:textColor="@color/green"
-        android:textSize="@dimen/textSizeBig"
+        android:textSize="@dimen/textSizeHuge"
         app:layout_constraintBottom_toTopOf="@+id/buttonDisconnect"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonClear" />
+        app:layout_constraintTop_toBottomOf="@+id/modeButton" />
 
     <TextView
         android:id="@+id/info"
@@ -146,6 +129,54 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <ToggleButton
+        android:id="@+id/modeButton"
+        android:layout_width="@dimen/buttonWidth"
+        android:layout_height="@dimen/buttonHeight"
+        android:layout_marginTop="20dp"
+        android:backgroundTint="@color/blue"
+        android:textColor="@color/white"
+        android:textOff="x, y, rot(z)"
+        android:textOn="ωp, ωl"
+        android:textSize="@dimen/textSizeBig"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/slider" />
+
+    <TextView
+        android:id="@+id/test"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:text="0.0"
+        android:textColor="@color/blue"
+        android:textSize="@dimen/textSizeHuge"
+        app:layout_constraintBottom_toTopOf="@+id/slider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageDown" />
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/slider"
+        android:layout_width="300dp"
+        android:layout_height="25dp"
+        android:layout_marginTop="70dp"
+        android:valueFrom="-10.0"
+        android:valueTo="10.0"
+        android:stepSize="0.1"
+        android:value="5.0"
+        app:labelBehavior="gone"
+        app:tickVisible="false"
+        app:trackColorActive="@color/blue"
+        app:trackColorInactive="@color/grey"
+        app:thumbColor="@color/blue"
+        app:thumbRadius="14dp"
+        app:trackHeight="12dp"
+        app:haloColor="@color/blue"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageDown" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

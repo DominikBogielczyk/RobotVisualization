@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="buttonWidth">250dp</dimen>
+    <dimen name="modeButtonH">110dp</dimen>
     <dimen name="buttonHeight">60dp</dimen>
     <dimen name="bluetoothImageW">150dp</dimen>
     <dimen name="bluetoothImageH">100dp</dimen>
@@ -16,4 +17,5 @@
     <dimen name="cameraHeight">100dp</dimen>
     <dimen name="textSize">18dp</dimen>
     <dimen name="textSizeBig">22dp</dimen>
+    <dimen name="textSizeHuge">28dp</dimen>
 </resources>
