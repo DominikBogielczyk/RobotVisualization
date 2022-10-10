@@ -32,6 +32,8 @@ struct {
 
     float angular_velocity = 60.0;
     float linear_velocity = 200.0;
+    bool collision = 0;
+    bool prev_collision = 0;
 } robot;
 
 void draw_circle(int x, int y, double radius, double width, double rot, char color, double dz = 0.0) {
@@ -440,6 +442,8 @@ void play() {
     glPushMatrix();
 
     //robot control and collision check
+    robot.prev_collision = robot.collision;
+
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || input.find("left") != std::string::npos) {
       robot.rot_z -= (clk.restart().asSeconds() - prev_time) * robot.angular_velocity;
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || input.find("right") != std::string::npos) {
@@ -448,41 +452,75 @@ void play() {
       if (abs(robot.x - (room_width / 2)) > robot.radius && abs(robot.x + (room_width / 2)) > robot.radius) {
         robot.prev_x = robot.x;
         robot.x += (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * cos(robot.rot_z * PI / 180);
+
+        if(robot.prev_collision)
+        {
+            robot.collision = 0;
+            serial -> write("ok");
+        }
       } else {
-          output = "collision ";
-          serial -> write(output);
-          robot.x = robot.prev_x;
+          if(!robot.prev_collision)
+          {
+              serial -> write("collision");
+              robot.x = robot.prev_x;
+              robot.collision = 1;
+          }
       }
       if (abs(robot.y - (room_length / 2)) > robot.radius && abs(robot.y + (room_length / 2)) > robot.radius) {
         robot.prev_y = robot.y;
         robot.y += (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * sin(robot.rot_z * PI / 180);
-      } else {
-          output = "collision ";
-          serial -> write(output);
-          robot.y = robot.prev_y;
+        if(robot.prev_collision)
+        {
+            robot.collision = 0;
+            serial -> write("ok");
+        }
+      } else{
+          if(!robot.prev_collision)
+          {
+              serial -> write("collision");
+              robot.y = robot.prev_y;
+              robot.collision = 1;
+          }
+
       }
 
-      std::cout << robot.x << " - " << robot.y << std::endl;
+      //std::cout << robot.x << " - " << robot.y << std::endl;
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || input.find("down") != std::string::npos) {
       if (abs(robot.x - (room_width / 2)) > robot.radius && abs(robot.x + (room_width / 2)) > robot.radius) {
         robot.prev_x = robot.x;
         robot.x -= (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * cos(robot.rot_z * PI / 180);
+        if(robot.prev_collision)
+        {
+            robot.collision = 0;
+            serial -> write("ok");
+        }
       } else {
-          output = "collision ";
-          serial -> write(output);
-          robot.x = robot.prev_x;
+
+          if(!robot.prev_collision)
+          {
+              serial -> write("collision");
+              robot.x = robot.prev_x;
+              robot.collision = 1;
+          }
       }
       if (abs(robot.y - (room_length / 2)) > robot.radius && abs(robot.y + (room_length / 2)) > robot.radius) {
         robot.prev_y = robot.y;
         robot.y -= (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * sin(robot.rot_z * PI / 180);
+        if(robot.prev_collision)
+        {
+            robot.collision = 0;
+            serial -> write("ok");
+        }
       } else {
-          output = "collision ";
-          serial -> write(output);
-          robot.y = robot.prev_y;
+          if(!robot.prev_collision)
+          {
+              serial -> write("collision");
+              robot.collision = 1;
+              robot.y = robot.prev_y;
+          }
       }
       std::cout << robot.x << " - " << robot.y << std::endl;
     }
-
 
     //camera movement
     cameraHandling(clk, prev_time, camera.type, false);
@@ -513,7 +551,8 @@ void play() {
     if (readData.toStdString().length() > 0) {
         posOfsep = 0;
         input = readData.toStdString();
-        std::cout<<input<<std::endl;
+        //std::cout<<input<<std::endl;
+
       //RECEIVED COMMAND "CAMERA" - CHANGE CAMERA
       if(input.find("camera") != std::string::npos)
       {

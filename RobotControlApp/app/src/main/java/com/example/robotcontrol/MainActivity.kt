@@ -48,10 +48,15 @@ class MainActivity : AppCompatActivity() {
         get() = findViewById(R.id.imageCamera)
     private val textView: TextView
         get() = findViewById(R.id.textView)
+    private val delayTextView: TextView
+        get() = findViewById(R.id.delayTextView)
     private val infoText: TextView
         get() = findViewById(R.id.info)
     private val buttonClear: Button
         get() = findViewById(R.id.buttonClear)
+
+    private var cmdIndex = 0
+    private var cmdTime: Long = 0
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -97,24 +102,25 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun onTouch(event: MotionEvent?, command: String, sendStop: Boolean): Boolean {
-        //val currentTime = LocalDateTime.now()
-        //val formattedTime = currentTime.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss.SSS"))
-        val formattedTime: Long = System.currentTimeMillis()
-
         var text = " "
-        var size = 0
+        var size = ""
         when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
-                text = formattedTime.toString() + " " + command
-                size = text.toByteArray().size
-                sendCommand("$text $size bytes")
+                text = command
+                size = text.toByteArray().size.toString() + "B"
+                sendCommand("$text;$cmdIndex;$size")
+                cmdTime = System.currentTimeMillis()
+                cmdIndex += 1
+                cmdIndex = cmdIndex % 9
             }
             MotionEvent.ACTION_UP -> {
-                if(sendStop)
-                {
-                    text = formattedTime.toString() + " stop"
-                    size = text.toByteArray().size
-                    sendCommand("$text $size bytes")
+                if (sendStop) {
+                    text = "stop"
+                    size = text.toByteArray().size.toString() + "B"
+                    sendCommand("$text;$cmdIndex;$size")
+                    cmdTime = System.currentTimeMillis()
+                    cmdIndex += 1
+                    cmdIndex = cmdIndex % 9
                 }
             }
         }
@@ -142,20 +148,37 @@ class MainActivity : AppCompatActivity() {
             try {
                 val inputBufferSize = bluetoothSocket!!.inputStream.available()
                 //create buffer with appropriate size
-               if(inputBufferSize>0)
-               {
-                   val inputBuffer = ByteArray(inputBufferSize)
-                   Log.i("info", "Reading")
+                if (inputBufferSize > 0) {
+                    val inputBuffer = ByteArray(inputBufferSize)
+                    Log.i("info", "Reading")
 
-                   //inputStream -> inputBuffer variable
-                   bluetoothSocket!!.inputStream.read(inputBuffer)
+                    //inputStream -> inputBuffer variable
+                    bluetoothSocket!!.inputStream.read(inputBuffer)
 
-                   //ByteArray to String conversion
-                   val text = String(inputBuffer)
-                   Log.i("info", String(inputBuffer))
-                   //display read text
-                   textView.text = textView.text.toString() + text.toString()
-               }
+                    //ByteArray to String conversion
+                    val text = String(inputBuffer)
+                    Log.i("info", text)
+
+                    if ("collision" in text) {
+                        textView.text = "Collision !!!"
+                        textView.setTextColor(getResources().getColor(R.color.red))
+                    } else if ("ok" in text) {
+                        textView.text = "Movement OK"
+                        textView.setTextColor(getResources().getColor(R.color.green))
+                    }
+                    if (text.contains("[0-9]".toRegex())) {
+
+                        for (i in 0..9) {
+                            if (i.toString() in text) {
+                                var t = System.currentTimeMillis() - cmdTime
+                                delayTextView.text = t.toString() + "ms"
+                            }
+                        }
+                    }
+
+                    //display read text
+
+                }
             } catch (e: IOException) {
                 Log.i("info", "Reading failed")
                 // infoText.text = "Connection failed"
@@ -166,8 +189,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun clear()
-    {
+    fun clear() {
         textView.text = ""
     }
 
@@ -196,7 +218,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun readTimer() {
-        object : CountDownTimer(10000, 100) {
+        object : CountDownTimer(10000000, 1) {
             @RequiresApi(Build.VERSION_CODES.O)
             override fun onTick(millisUntilFinished: Long) {
                 readComand()
@@ -264,7 +286,7 @@ class MainActivity : AppCompatActivity() {
                 this@MainActivity.infoText.text = clientName + " connection OK"
                 this@MainActivity.infoText.setTextColor(context.resources.getColor(R.color.green))
 
-               //
+                //
             }
             //TURN OFF PROGRESS DIALOG
             progressDialog.dismiss()
