@@ -22,9 +22,9 @@ struct {
 
     float x = 0;
     float y = 0;
+    float new_x = 0;
+    float new_y = 0;
     float rot_z = 0;
-    float prev_x = 0;
-    float prev_y = 0;
 
     float left_wheel_velocity = 0.0;
     float right_wheel_velocity = 0.0;
@@ -449,9 +449,9 @@ void play() {
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || input.find("right") != std::string::npos) {
       robot.rot_z += (clk.restart().asSeconds() - prev_time) * robot.angular_velocity;
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || input.find("up") != std::string::npos) {
-      if (abs(robot.x - (room_width / 2)) > robot.radius && abs(robot.x + (room_width / 2)) > robot.radius) {
-        robot.prev_x = robot.x;
-        robot.x += (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * cos(robot.rot_z * PI / 180);
+        robot.new_x = robot.x + (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * cos(robot.rot_z * PI / 180);
+      if (abs(robot.new_x - (room_width / 2)) > robot.radius && abs(robot.new_x + (room_width / 2)) > robot.radius) {
+        robot.x = robot.new_x;
 
         if(robot.prev_collision)
         {
@@ -462,13 +462,12 @@ void play() {
           if(!robot.prev_collision)
           {
               serial -> write("collision");
-              robot.x = robot.prev_x;
               robot.collision = 1;
           }
       }
-      if (abs(robot.y - (room_length / 2)) > robot.radius && abs(robot.y + (room_length / 2)) > robot.radius) {
-        robot.prev_y = robot.y;
-        robot.y += (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * sin(robot.rot_z * PI / 180);
+      robot.new_y = robot.y + (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * sin(robot.rot_z * PI / 180);
+      if (abs(robot.new_y - (room_length / 2)) > robot.radius && abs(robot.new_y + (room_length / 2)) > robot.radius) {
+        robot.y = robot.new_y;
         if(robot.prev_collision)
         {
             robot.collision = 0;
@@ -478,17 +477,16 @@ void play() {
           if(!robot.prev_collision)
           {
               serial -> write("collision");
-              robot.y = robot.prev_y;
               robot.collision = 1;
           }
 
       }
 
       //std::cout << robot.x << " - " << robot.y << std::endl;
+      robot.new_x = robot.x - (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * cos(robot.rot_z * PI / 180);
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || input.find("down") != std::string::npos) {
-      if (abs(robot.x - (room_width / 2)) > robot.radius && abs(robot.x + (room_width / 2)) > robot.radius) {
-        robot.prev_x = robot.x;
-        robot.x -= (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * cos(robot.rot_z * PI / 180);
+      if (abs(robot.new_x - (room_width / 2)) > robot.radius && abs(robot.new_x + (room_width / 2)) > robot.radius) {
+        robot.x = robot.new_x;
         if(robot.prev_collision)
         {
             robot.collision = 0;
@@ -499,13 +497,11 @@ void play() {
           if(!robot.prev_collision)
           {
               serial -> write("collision");
-              robot.x = robot.prev_x;
               robot.collision = 1;
           }
       }
-      if (abs(robot.y - (room_length / 2)) > robot.radius && abs(robot.y + (room_length / 2)) > robot.radius) {
-        robot.prev_y = robot.y;
-        robot.y -= (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * sin(robot.rot_z * PI / 180);
+      robot.new_y = robot.y - (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * sin(robot.rot_z * PI / 180);
+      if (abs(robot.new_y - (room_length / 2)) > robot.radius && abs(robot.new_y + (room_length / 2)) > robot.radius) {
         if(robot.prev_collision)
         {
             robot.collision = 0;
@@ -516,7 +512,6 @@ void play() {
           {
               serial -> write("collision");
               robot.collision = 1;
-              robot.y = robot.prev_y;
           }
       }
       std::cout << robot.x << " - " << robot.y << std::endl;
