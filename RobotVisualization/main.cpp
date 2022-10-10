@@ -1,7 +1,7 @@
 #include "headers.h"
 
 #define PI 3.14159265
-#define port "COM7"
+#define port "COM3"
 
 enum cameraType
 {
@@ -25,6 +25,9 @@ struct {
     float rot_z = 0;
     float prev_x = 0;
     float prev_y = 0;
+
+    float left_wheel_velocity = 0.0;
+    float right_wheel_velocity = 0.0;
 
     const float angular_velocity = 60.0;
     const float linear_velocity = 200.0;
@@ -169,6 +172,9 @@ void draw_floor(double width, double length) {
   glVertex3d(width / 2, -length / 2, 0);
   glVertex3d(-width / 2, -length / 2, 0);
   glEnd();
+  glColor3d(169 / 255.0, 169 / 255.0, 169 / 255.0);
+
+
 }
 
 void draw_walls(double width, double length, double height) {
@@ -207,6 +213,16 @@ void draw_walls(double width, double length, double height) {
   glVertex3d(width / 2, length / 2, height);
   glVertex3d(width / 2, -length / 2, height);
   glEnd();
+}
+
+void draw_doors(double height, double width, double position){
+    glBegin(GL_POLYGON);
+    glColor3d(1.0, 1.0, 255.0 / 255);
+    glVertex3d(-position / 2+1, -width / 2, 0);
+    glVertex3d(-position / 2+1, width / 2, 0);
+    glVertex3d(-position / 2+1, width / 2, height);
+    glVertex3d(-position / 2+1, -width / 2, height);
+    glEnd();
 }
 
 void set_viewport(int width, int height, cameraType cam) {
@@ -278,7 +294,7 @@ bool connectBluetooth(QSerialPort *serial)
     serial -> setDataBits(QSerialPort::Data8);
     serial -> setParity(QSerialPort::NoParity);
     serial -> setFlowControl(QSerialPort::NoFlowControl);
-    if (serial -> open(QIODevice::ReadOnly)) {
+    if (serial -> open(QIODevice::ReadWrite)) {
       ok = true;
     } else {
       //error
@@ -303,6 +319,10 @@ void play() {
   const double room_width = 1200.0;
   const double room_length = 800.0;
   const double room_height = 250.0;
+
+  const double doors_height = 200.0;
+  const double doors_width  = 100.0;
+  const double doors_position = 1200.0;
 
   glClearColor(0, 0, 0, 1);
 
@@ -364,14 +384,14 @@ void play() {
   sf::Clock clk;
 
   std::string input;
+  QByteArray output;
   QByteArray readData;
   std::vector < std::string > data {};
 
-  size_t posOfSpace = 0;
-  std::string space = " ";
+  size_t posOfsep = 0;
+  std::string separation_sign = ";";
   std::string dataToCut;
-  long long sendTime;
-  long long delay;
+  std::string control;
 
   QSerialPort * serial = new QSerialPort();
   running = connectBluetooth(serial);
@@ -409,13 +429,17 @@ void play() {
         robot.prev_x = robot.x;
         robot.x += (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * cos(robot.rot_z * PI / 180);
       } else {
-        robot.x = robot.prev_x;
+          output = "collision ";
+          serial -> write(output);
+          robot.x = robot.prev_x;
       }
       if (abs(robot.y - (room_length / 2)) > robot.radius && abs(robot.y + (room_length / 2)) > robot.radius) {
         robot.prev_y = robot.y;
         robot.y += (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * sin(robot.rot_z * PI / 180);
       } else {
-        robot.y = robot.prev_y;
+          output = "collision ";
+          serial -> write(output);
+          robot.y = robot.prev_y;
       }
 
       std::cout << robot.x << " - " << robot.y << std::endl;
@@ -424,13 +448,17 @@ void play() {
         robot.prev_x = robot.x;
         robot.x -= (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * cos(robot.rot_z * PI / 180);
       } else {
-        robot.x = robot.prev_x;
+          output = "collision ";
+          serial -> write(output);
+          robot.x = robot.prev_x;
       }
       if (abs(robot.y - (room_length / 2)) > robot.radius && abs(robot.y + (room_length / 2)) > robot.radius) {
         robot.prev_y = robot.y;
         robot.y -= (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * sin(robot.rot_z * PI / 180);
       } else {
-        robot.y = robot.prev_y;
+          output = "collision ";
+          serial -> write(output);
+          robot.y = robot.prev_y;
       }
       std::cout << robot.x << " - " << robot.y << std::endl;
     }
@@ -443,6 +471,7 @@ void play() {
 
     draw_floor(room_width, room_length);
     draw_walls(room_width, room_length, room_height);
+    draw_doors(doors_height,doors_width,doors_position);
 
     glTranslated(robot.x, robot.y, 0.0);
     glRotated(0, 1.0, 0.0, 0.0);
@@ -462,8 +491,9 @@ void play() {
     auto receiveTime = std::chrono::duration_cast < std::chrono::milliseconds > (std::chrono::system_clock::now().time_since_epoch()).count();
 
     if (readData.toStdString().length() > 0) {
-      input = readData.toStdString();
-
+        posOfsep = 0;
+        input = readData.toStdString();
+        std::cout<<input<<std::endl;
       //RECEIVED COMMAND "CAMERA" - CHANGE CAMERA
       if(input.find("camera") != std::string::npos)
       {
@@ -472,21 +502,22 @@ void play() {
 
       dataToCut = input;
 
-      while ((posOfSpace = dataToCut.find(space)) != std::string::npos) {
-        data.push_back(dataToCut.substr(0, posOfSpace));
-        dataToCut.erase(0, posOfSpace + space.length());
+      while ((posOfsep = dataToCut.find(separation_sign)) != std::string::npos) {
+        data.push_back(dataToCut.substr(0, posOfsep));
+        dataToCut.erase(0, posOfsep + separation_sign.length());
       }
 
-      sendTime = std::stoll(data[0]);
+      output =QString::fromStdString(data[1]).toUtf8();
+      serial -> write(output);
 
-      delay = receiveTime - sendTime;
+      control = data[0];
 
-      std::cout << sendTime << "-" << receiveTime << std::endl;
-      std::cout << "Delay: " << delay << std::endl;
-      posOfSpace = 0;
+
+
       data.clear();
 
     }
+
 
     //sendTime = std::stol(data[0]);
 
