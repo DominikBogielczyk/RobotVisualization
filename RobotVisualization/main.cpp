@@ -1,7 +1,7 @@
 #include "headers.h"
 
 #define PI 3.14159265
-#define port "COM3"
+#define port "COM7"
 
 enum cameraType
 {
@@ -29,18 +29,19 @@ struct {
     float left_wheel_velocity = 0.0;
     float right_wheel_velocity = 0.0;
 
-    const float angular_velocity = 60.0;
-    const float linear_velocity = 200.0;
+
+    float angular_velocity = 60.0;
+    float linear_velocity = 200.0;
 } robot;
 
 void draw_circle(int x, int y, double radius, double width, double rot, char color, double dz = 0.0) {
 
   switch (color) {
   case 'g':
-    glColor3d(0.5, 0.5, 0.4); //GREY
+    glColor3f(0/255.f, 0/255.f, 0/255.f); //BLACK
     break;
   case 'b':
-    glColor3d(0.0, 0.0, 0.0); //BLACK
+    glColor3d(0/255.f, 0/255.f, 153/255.f); //BLUE
     break;
   case 't':
     glColor4d(0.5, 0.5, 0.4, 0.0); //TRANSPARENT
@@ -142,7 +143,7 @@ void draw_robot() {
   const double wheel_radius = robot.height - from_ground;
 
   //BOX
-  glColor3d(169 / 255.0, 169 / 255.0, 169 / 255.0);
+  glColor3f(50.f/255, 50.f/255, 255.f/255);
   draw_cube(robot.radius, 2 / 1.5 * robot.radius, 2 * wheel_radius - from_ground - 1, wheel_radius + from_ground);
   //LEFT WHEEL
   draw_circle(0, -robot.radius / 1.25, wheel_radius, wheel_width, 0.0, 'b'); //int x, int y, double radius, double width, double rot, char color
@@ -165,14 +166,33 @@ void draw_robot() {
 
 void draw_floor(double width, double length) {
   glBegin(GL_POLYGON);
-  //glColor3d(225.0/255, 225.0/255, 208.0/255);
-  glColor4d(0.5, 0.6, 0.4, 0.7);
+  glColor3f(255/255, 255/255, 255/255);
   glVertex3d(-width / 2, length / 2, 0);
   glVertex3d(width / 2, length / 2, 0);
   glVertex3d(width / 2, -length / 2, 0);
   glVertex3d(-width / 2, -length / 2, 0);
   glEnd();
+
   glColor3d(169 / 255.0, 169 / 255.0, 169 / 255.0);
+
+  glLineWidth(4.0);
+  glColor3f(50/255, 50/255, 255/255);
+
+  int n = 6;
+  for(int i=1; i<n; i++)
+  {
+     glBegin(GL_LINES);
+     glVertex3f(-width/2, -length/2 + i*length/n, 0);
+     glVertex3f(width/2, -length/2 + i*length/n, 0);
+     glEnd();
+  }
+  for(int i=1; i<n; i++)
+  {
+     glBegin(GL_LINES);
+     glVertex3f(-width/2 + i*width/n, -length/2, 0);
+     glVertex3f(-width/2 + i*width/n, length/2, 0);
+     glEnd();
+  }
 
 
 }
@@ -180,7 +200,7 @@ void draw_floor(double width, double length) {
 void draw_walls(double width, double length, double height) {
   //RIGHT
   glBegin(GL_POLYGON);
-  glColor3d(1.0, 1.0, 77.0 / 255);
+  glColor3f(50.f/255, 50.f/255, 255.f/255);
   glVertex3d(-width / 2, length / 2, 0);
   glVertex3d(width / 2, length / 2, 0);
   glVertex3d(width / 2, length / 2, height);
@@ -189,7 +209,7 @@ void draw_walls(double width, double length, double height) {
 
   //LEFT
   glBegin(GL_POLYGON);
-  glColor3d(1.0, 1.0, 77.0 / 255);
+  glColor3f(50.f/255, 50.f/255, 255.f/255);
   glVertex3d(-width / 2, -length / 2, 0);
   glVertex3d(width / 2, -length / 2, 0);
   glVertex3d(width / 2, -length / 2, height);
@@ -198,7 +218,7 @@ void draw_walls(double width, double length, double height) {
 
   //REAR
   glBegin(GL_POLYGON);
-  glColor3d(1.0, 1.0, 153.0 / 255);
+  glColor3f(51.f/255, 153.f/255, 255.f/255);
   glVertex3d(-width / 2, -length / 2, 0);
   glVertex3d(-width / 2, length / 2, 0);
   glVertex3d(-width / 2, length / 2, height);
@@ -207,7 +227,7 @@ void draw_walls(double width, double length, double height) {
 
   //FRONT
   glBegin(GL_POLYGON);
-  glColor3d(1.0, 1.0, 153.0 / 255);
+  glColor3f(51.f/255, 153.f/255, 255.f/255);
   glVertex3d(width / 2, -length / 2, 0);
   glVertex3d(width / 2, length / 2, 0);
   glVertex3d(width / 2, length / 2, height);
@@ -343,15 +363,15 @@ void play() {
     1.0
   };
   GLfloat light_ambient[] = {
-    0.2,
-    0.2,
-    0.2,
+    0.4,
+    0.4,
+    0.4,
     1.0
   }; //otoczenie
   GLfloat light_diffuse[] = {
-    0.8,
-    0.8,
-    0.8,
+    0.4,
+    0.4,
+    0.4,
     1.0
   }; //rozproszone
   GLfloat light_specular[] = {
@@ -369,9 +389,9 @@ void play() {
   glEnable(GL_LIGHT0);
 
   GLfloat global_ambient[] = {
-    0.3,
-    0.3,
-    0.3,
+    0.5,
+    0.5,
+    0.5,
     0.1
   };
   glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
