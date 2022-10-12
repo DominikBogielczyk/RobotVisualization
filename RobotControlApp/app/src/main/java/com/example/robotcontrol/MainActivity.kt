@@ -55,14 +55,26 @@ class MainActivity : AppCompatActivity() {
         get() = findViewById(R.id.info)
     private val modeButton: ToggleButton
         get() = findViewById(R.id.modeButton)
-    private val test: TextView
-        get() = findViewById(R.id.test)
-    private val slider: Slider
-        get() = findViewById(R.id.slider)
+    private val sliderBothValue: TextView
+        get() = findViewById(R.id.sliderBothValue)
+    private val sliderLeftValue: TextView
+        get() = findViewById(R.id.sliderLeftValue)
+    private val sliderRightValue: TextView
+        get() = findViewById(R.id.sliderRightValue)
+    private val sliderBoth: Slider
+        get() = findViewById(R.id.sliderBoth)
+    private val sliderLeft: Slider
+        get() = findViewById(R.id.sliderLeft)
+    private val sliderRight: Slider
+        get() = findViewById(R.id.sliderRight)
+
+    private val stopButton: Button
+        get() = findViewById(R.id.buttonStop)
 
     private var cmdIndex = 0
     private var cmdTime: Long = 0
-    private var velocity: Float = 5.0F
+    private var velocityLeft = 0.0F
+    private var velocityRight = 0.0F
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -78,27 +90,27 @@ class MainActivity : AppCompatActivity() {
 
         var textToSend = ""
         imageDown.setOnTouchListener { v: View, m: MotionEvent ->
-            textToSend = "wp" + (-velocity).toString() + "wl" + (-velocity).toString()
-            onTouch(m, textToSend, sendStop = true)
+            textToSend = "wp" + (-velocityLeft).toString() + "wl" + (-velocityLeft).toString()
+            onTouch(m, textToSend, sendStop = true, imageDown)
             true
         }
         imageUp.setOnTouchListener { v: View, m: MotionEvent ->
-            textToSend = "wp" + velocity.toString() + "wl" + velocity.toString()
-            onTouch(m, textToSend, sendStop = true)
+            textToSend = "wp" + velocityLeft.toString() + "wl" + velocityLeft.toString()
+            onTouch(m, textToSend, sendStop = true, imageUp)
             true
         }
         imageLeft.setOnTouchListener { v: View, m: MotionEvent ->
-            textToSend = "wp" + velocity.toString() + "wl" + (-velocity).toString()
-            onTouch(m, textToSend, sendStop = true)
+            textToSend = "wp" + velocityLeft.toString() + "wl" + (-velocityLeft).toString()
+            onTouch(m, textToSend, sendStop = true, imageLeft)
             true
         }
         imageRight.setOnTouchListener { v: View, m: MotionEvent ->
-            textToSend = "wp" + (-velocity).toString() + "wl" + velocity.toString()
-            onTouch(m, textToSend, sendStop = true)
+            textToSend = "wp" + (-velocityLeft).toString() + "wl" + velocityLeft.toString()
+            onTouch(m, textToSend, sendStop = true, imageRight)
             true
         }
         imageCamera.setOnTouchListener { v: View, m: MotionEvent ->
-            onTouch(m, "camera", sendStop = false)
+            onTouch(m, "camera", sendStop = false, imageCamera)
             true
         }
         modeButton.setOnCheckedChangeListener { _, isChecked ->
@@ -108,19 +120,55 @@ class MainActivity : AppCompatActivity() {
                 changeVisibility(2)
             }
         }
-        slider.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+        sliderLeft.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
             override fun onStartTrackingTouch(slider: Slider) {
                 //
             }
 
             override fun onStopTrackingTouch(slider: Slider) {
-                //
+                sendFromSlider()
             }
         })
+        sliderLeft.addOnChangeListener { _, value, fromUser ->
+            velocityLeft = sliderLeft.value
+            sliderLeftValue.text = velocityLeft.toString()
+        }
 
-        slider.addOnChangeListener { slider, value, fromUser ->
-            velocity = slider.value
-            test.text = velocity.toString()
+        sliderRight.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+            override fun onStartTrackingTouch(slider: Slider) {
+                //
+            }
+
+            override fun onStopTrackingTouch(slider: Slider) {
+                sendFromSlider()
+            }
+        })
+        sliderRight.addOnChangeListener { _, value, fromUser ->
+            velocityRight = sliderRight.value
+            sliderRightValue.text = velocityRight.toString()
+        }
+
+        sliderBoth.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
+            override fun onStartTrackingTouch(slider: Slider) {
+                //
+            }
+
+            override fun onStopTrackingTouch(slider: Slider) {
+                if(modeButton.isChecked)
+                {
+                    sendFromSlider()
+                }
+
+            }
+        })
+        sliderBoth.addOnChangeListener { _, value, fromUser ->
+            velocityLeft = sliderBoth.value
+            velocityRight = sliderBoth.value
+            sliderLeft.value = sliderBoth.value
+            sliderRight.value = sliderBoth.value
+            sliderBothValue.text = velocityLeft.toString()
+            sliderLeftValue.text = velocityLeft.toString()
+            sliderRightValue.text = velocityRight.toString()
         }
 
 
@@ -128,13 +176,25 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private fun sendFromSlider()
+    {
+        var text = "wp" + velocityRight.toString() + "wl" + velocityLeft.toString()
+        var size = text.toByteArray().size.toString() + "B"
+        sendCommand("$text;$cmdIndex;$size")
+        cmdTime = System.currentTimeMillis()
+        cmdIndex += 1
+        cmdIndex = cmdIndex % 9
+    }
+
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun onTouch(event: MotionEvent?, command: String, sendStop: Boolean): Boolean {
+    private fun onTouch(event: MotionEvent?, command: String, sendStop: Boolean, image: ImageView): Boolean {
         var text = " "
         var size = ""
+
         when (event?.action) {
             MotionEvent.ACTION_DOWN -> {
+                image.setColorFilter(resources.getColor(R.color.orange));
                 text = command
                 size = text.toByteArray().size.toString() + "B"
                 sendCommand("$text;$cmdIndex;$size")
@@ -143,6 +203,7 @@ class MainActivity : AppCompatActivity() {
                 cmdIndex = cmdIndex % 9
             }
             MotionEvent.ACTION_UP -> {
+                image.setColorFilter(resources.getColor(R.color.blue));
                 if (sendStop) {
                     text = "wp0.0wl0.0"
                     size = text.toByteArray().size.toString() + "B"
@@ -218,10 +279,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun clear() {
-        textView.text = ""
-    }
-
     fun disconnect(v: View?) {
         if (bluetoothSocket != null) {
             try {
@@ -235,6 +292,18 @@ class MainActivity : AppCompatActivity() {
         finish()
     }
 
+    fun stop(v: View?) {
+
+        velocityLeft = 0.0F
+        velocityRight = 0.0F
+        sliderRight.value = 0.0F
+        sliderLeft.value = 0.0F
+        sliderBoth.value = 0.0F
+
+        sendFromSlider()
+
+    }
+
     fun changeVisibility(v: Int) {
         when (v) {
             0 -> {
@@ -242,18 +311,38 @@ class MainActivity : AppCompatActivity() {
                 imageUp.visibility = View.INVISIBLE
                 imageLeft.visibility = View.INVISIBLE
                 imageRight.visibility = View.INVISIBLE
+                sliderLeft.visibility = View.INVISIBLE
+                sliderRight.visibility = View.INVISIBLE
+                sliderBoth.visibility = View.INVISIBLE
+                sliderBothValue.visibility = View.INVISIBLE
+                sliderLeftValue.visibility = View.INVISIBLE
+                sliderRightValue.visibility = View.INVISIBLE
             }
             1 -> {
                 imageDown.visibility = View.INVISIBLE
                 imageUp.visibility = View.INVISIBLE
                 imageLeft.visibility = View.INVISIBLE
                 imageRight.visibility = View.INVISIBLE
+                sliderLeft.visibility = View.VISIBLE
+                sliderRight.visibility = View.VISIBLE
+                sliderBoth.visibility = View.VISIBLE
+                sliderBothValue.visibility = View.INVISIBLE
+                sliderLeftValue.visibility = View.VISIBLE
+                sliderRightValue.visibility = View.VISIBLE
+                stopButton.visibility = View.VISIBLE
             }
             2 -> {
                 imageDown.visibility = View.VISIBLE
                 imageUp.visibility = View.VISIBLE
                 imageLeft.visibility = View.VISIBLE
                 imageRight.visibility = View.VISIBLE
+                sliderLeft.visibility = View.INVISIBLE
+                sliderRight.visibility = View.INVISIBLE
+                sliderBoth.visibility = View.VISIBLE
+                sliderBothValue.visibility = View.VISIBLE
+                sliderLeftValue.visibility = View.INVISIBLE
+                sliderRightValue.visibility = View.INVISIBLE
+                stopButton.visibility = View.INVISIBLE
             }
         }
 

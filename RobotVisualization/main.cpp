@@ -514,7 +514,7 @@ void play() {
               robot.collision = 1;
           }
       }
-      std::cout << robot.x << " - " << robot.y << std::endl;
+      //std::cout << robot.x << " - " << robot.y << std::endl;
     }
 
     //camera movement
@@ -546,7 +546,7 @@ void play() {
     if (readData.toStdString().length() > 0) {
         posOfsep = 0;
         input = readData.toStdString();
-        //std::cout<<input<<std::endl;
+        std::cout<<input<<std::endl;
 
       //RECEIVED COMMAND "CAMERA" - CHANGE CAMERA
       if(input.find("camera") != std::string::npos)

@@ -96,6 +96,23 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageDown" />
 
+    <Button
+        android:id="@+id/buttonStop"
+        android:layout_width="@dimen/buttonHalfWidth"
+        android:layout_height="@dimen/buttonHeight"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:height="10dp"
+        android:backgroundTint="@color/blue"
+        android:onClick="stop"
+        android:text="@string/stop"
+        android:textSize="@dimen/textSizeBig"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/imageDown"
+        app:layout_constraintEnd_toEndOf="@+id/imageCamera"
+        app:layout_constraintStart_toStartOf="@+id/imageCamera"
+        app:layout_constraintTop_toBottomOf="@+id/imageCamera" />
+
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
@@ -137,35 +154,59 @@
         android:layout_marginTop="20dp"
         android:backgroundTint="@color/blue"
         android:textColor="@color/white"
-        android:textOff="x, y, rot(z)"
-        android:textOn="ωp, ωl"
+        android:textOff="ωl, ωp"
+        android:textOn="x, y, rot(z)"
         android:textSize="@dimen/textSizeBig"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/slider" />
+        app:layout_constraintTop_toBottomOf="@+id/sliderBoth" />
 
     <TextView
-        android:id="@+id/test"
+        android:id="@+id/sliderBothValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
         android:text="0.0"
         android:textColor="@color/blue"
         android:textSize="@dimen/textSizeHuge"
-        app:layout_constraintBottom_toTopOf="@+id/slider"
+        app:layout_constraintBottom_toTopOf="@+id/sliderBoth"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageDown" />
 
+    <TextView
+        android:id="@+id/sliderLeftValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="65dp"
+        android:layout_marginTop="125dp"
+        android:text="0.0"
+        android:textColor="@color/blue"
+        android:textSize="@dimen/textSizeHuge"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sliderLeft" />
+
+    <TextView
+        android:id="@+id/sliderRightValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="65dp"
+        android:text="0.0"
+        android:textColor="@color/blue"
+        android:textSize="@dimen/textSizeHuge"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/sliderLeftValue" />
+
     <com.google.android.material.slider.Slider
-        android:id="@+id/slider"
+        android:id="@+id/sliderBoth"
         android:layout_width="300dp"
         android:layout_height="25dp"
         android:layout_marginTop="70dp"
         android:valueFrom="-10.0"
         android:valueTo="10.0"
         android:stepSize="0.1"
-        android:value="5.0"
+        android:value="0.0"
         app:labelBehavior="gone"
         app:tickVisible="false"
         app:trackColorActive="@color/blue"
@@ -177,6 +218,52 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageDown" />
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/sliderLeft"
+        android:layout_width="300dp"
+        android:layout_height="25dp"
+        android:layout_marginTop="@dimen/sliderTop"
+        android:layout_marginEnd="@dimen/sliderLeftRight"
+        android:rotation="-90"
+        android:stepSize="0.1"
+        android:valueFrom="-10.0"
+        android:valueTo="10.0"
+        android:value="0.0"
+        android:visibility="invisible"
+        app:haloColor="@color/blue"
+        app:labelBehavior="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:thumbColor="@color/blue"
+        app:thumbRadius="14dp"
+        app:tickVisible="false"
+        app:trackColorActive="@color/blue"
+        app:trackColorInactive="@color/grey"
+        app:trackHeight="12dp" />
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/sliderRight"
+        android:layout_width="300dp"
+        android:layout_height="25dp"
+        android:layout_marginStart="@dimen/sliderLeftRight"
+        android:layout_marginTop="@dimen/sliderTop"
+        android:rotation="-90"
+        android:stepSize="0.1"
+        android:valueFrom="-10.0"
+        android:valueTo="10.0"
+        android:value="0.0"
+        android:visibility="invisible"
+        app:haloColor="@color/blue"
+        app:labelBehavior="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:thumbColor="@color/blue"
+        app:thumbRadius="14dp"
+        app:tickVisible="false"
+        app:trackColorActive="@color/blue"
+        app:trackColorInactive="@color/grey"
+        app:trackHeight="12dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
