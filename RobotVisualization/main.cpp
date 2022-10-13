@@ -41,6 +41,8 @@ struct {
     bool collision_rear = 0;
     bool collision_right = 0;
     bool collision_left = 0;
+    bool collision = 0;
+    bool last_collision = 0;
 } robot;
 
 void draw_circle(int x, int y, double radius, double width, double rot, char color, double dz = 0.0) {
@@ -571,8 +573,6 @@ void play() {
     // draw stuff
     glPushMatrix();
 
-    //keyboard_robot_control();
-
     robot_movement(clk,prev_time,room_width,room_length);
 
     //convert rotation for 0-360 degrees only
@@ -586,10 +586,27 @@ void play() {
     collisions();
 
 
+
+    //send message if is collision or not
+
     if(robot.collision_front || robot.collision_rear || robot.collision_right || robot.collision_left){
-        output = "collision";
-        serial->write(output);
+        robot.collision = 1;
+    } else {
+        robot.collision = 0;
     }
+
+    if(robot.collision == 1 && robot.last_collision == 0){
+        output = "collision";
+        serial -> write(output);
+        std::cout<<output.toStdString()<<std::endl;
+        robot.last_collision = 1;
+    } else if(robot.collision == 0 && robot.last_collision == 1){
+        output = "ok";
+        serial -> write(output);
+        std::cout<<output.toStdString()<<std::endl;
+        robot.last_collision = 0;
+    }
+
 
     //camera movement
     cameraHandling(clk, prev_time, camera.type, false);
@@ -620,6 +637,7 @@ void play() {
     if (readData.toStdString().length() > 0) {
         posOfsep = 0;
         input = readData.toStdString();
+
       //RECEIVED COMMAND "CAMERA" - CHANGE CAMERA
       if(input.find("camera") != std::string::npos)
       {
