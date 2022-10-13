@@ -1,7 +1,7 @@
 #include "headers.h"
 
 #define PI 3.14159265
-#define port "COM7"
+#define port "COM3"
 
 enum cameraType
 {
@@ -19,21 +19,28 @@ struct {
 struct {
     const double height = 12.0;
     const double radius = 20.0;
+    const double from_ground = 3.0;
+    const double wheel_width = 1.0;
+    const double wheel_radius = height - from_ground;
+    const double track_between_wheels = radius * 2;
 
     float x = 0;
     float y = 0;
-    float new_x = 0;
-    float new_y = 0;
+    float prev_x = 0;
+    float prev_y = 0;
+    float rot_z_0_360 = 0;
     float rot_z = 0;
 
     float left_wheel_velocity = 0.0;
     float right_wheel_velocity = 0.0;
 
 
-    float angular_velocity = 60.0;
-    float linear_velocity = 200.0;
-    bool collision = 0;
-    bool prev_collision = 0;
+    float angular_velocity = 0.0;
+    float linear_velocity = 0.0;
+    bool collision_front = 0;
+    bool collision_rear = 0;
+    bool collision_right = 0;
+    bool collision_left = 0;
 } robot;
 
 void draw_circle(int x, int y, double radius, double width, double rot, char color, double dz = 0.0) {
@@ -140,9 +147,9 @@ void draw_cube(double robot_size_x, double robot_size_y, double robot_size_z, do
 }
 
 void draw_robot() {
-  const double from_ground = 3.0;
-  const double wheel_width = 1.0;
-  const double wheel_radius = robot.height - from_ground;
+  const double from_ground = robot.from_ground;
+  const double wheel_width = robot.wheel_width;
+  const double wheel_radius = robot.wheel_radius;
 
   //BOX
   glColor3f(50.f/255, 50.f/255, 255.f/255);
@@ -310,7 +317,8 @@ void cameraHandling(sf::Clock & clk, float prev_time, cameraType &type, bool cha
 
 bool connectBluetooth(QSerialPort *serial)
 {
-    bool ok = true;
+    // set bluetooth connection by serial port
+    bool ok;
     serial -> setPortName(port);
     serial -> setBaudRate(QSerialPort::Baud9600);
     serial -> setDataBits(QSerialPort::Data8);
@@ -326,6 +334,96 @@ bool connectBluetooth(QSerialPort *serial)
 
     return ok;
 }
+
+void velocity_extraction(std::string text){
+    // extract from bluetooth message velocities of both wheels
+    if(text.find("wp") != std::string::npos && text.find("wl") != std::string::npos){
+        std::regex re1(R"((wp)(.*)(wl))");
+        std::regex re2(R"((wl)(.*))");
+        std::smatch sm1;
+        std::smatch sm2;
+
+        std::regex_search(text,sm1,re1);
+        std::regex_search(text,sm2,re2);
+
+        robot.right_wheel_velocity = std::stof(sm1[2]);
+        robot.left_wheel_velocity = std::stof(sm2[2]);
+
+    }
+}
+
+void collisions(){
+    // check if robot ride away from wall if true there is no more collision if false there is still collision
+    if (robot.collision_front == 1){
+        if(robot.linear_velocity > 0 && (robot.rot_z_0_360 < 90 || robot.rot_z_0_360 > 270 )){
+            robot.collision_front = 0;
+        } else if(robot.linear_velocity < 0 && robot.rot_z_0_360 > 90 && robot.rot_z_0_360 < 270) {
+            robot.collision_front = 0;
+        } else {
+            robot.x = robot.prev_x;
+        }
+    }
+    if(robot.collision_rear == 1){
+        if(robot.linear_velocity > 0 && robot.rot_z_0_360 > 90 && robot.rot_z_0_360 < 270){
+            robot.collision_rear = 0;
+        } else if(robot.linear_velocity < 0  && (robot.rot_z_0_360 < 90 || robot.rot_z_0_360 > 270 )) {
+            robot.collision_rear = 0;
+        } else {
+            robot.x = robot.prev_x;
+        }
+    }
+    if(robot.collision_right == 1){
+        if(robot.linear_velocity > 0 && robot.rot_z_0_360 < 180){
+            robot.collision_right = 0;
+        } else if(robot.linear_velocity < 0 && robot.rot_z_0_360 > 180) {
+            robot.collision_right = 0;
+        } else {
+            robot.y = robot.prev_y;
+        }
+    }
+    if(robot.collision_left == 1){
+        if(robot.linear_velocity > 0 && robot.rot_z_0_360 > 180){
+            robot.collision_left = 0;
+        } else if(robot.linear_velocity < 0 && robot.rot_z_0_360 < 180) {
+            robot.collision_left = 0;
+        } else {
+            robot.y = robot.prev_y;
+        }
+    }
+}
+
+void robot_movement(sf::Clock clk,float prev_time,double room_width,double room_length){
+
+        // conversion from right and left wheels velocities to angular and linear velocities
+        robot.linear_velocity = (robot.right_wheel_velocity+robot.left_wheel_velocity)*5*robot.wheel_radius/2;
+        robot.angular_velocity = (robot.right_wheel_velocity-robot.left_wheel_velocity)*10*robot.wheel_radius/robot.track_between_wheels;
+
+        // calculate ratational movement of robot
+        robot.rot_z += (clk.restart().asSeconds() - prev_time) * robot.angular_velocity;
+
+        //chech if is collision if not move robot if not signal with which wall is collision
+        if (abs(robot.x - (room_width / 2)) > robot.radius && abs(robot.x + (room_width / 2)) > robot.radius && robot.collision_front == 0 && robot.collision_rear == 0) {
+          robot.prev_x = robot.x;
+          robot.x += (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * cos(robot.rot_z * PI / 180);
+        } else {
+            if(robot.x > 0){
+                robot.collision_front = 1;
+            } else {
+                robot.collision_rear = 1;
+            }
+        }
+        if (abs(robot.y - (room_length / 2)) > robot.radius && abs(robot.y + (room_length / 2)) > robot.radius && robot.collision_right == 0 && robot.collision_left == 0) {
+          robot.prev_y = robot.y;
+          robot.y += (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * sin(robot.rot_z * PI / 180);
+        } else {
+            if(robot.y > 0){
+                robot.collision_right = 1;
+            } else {
+                robot.collision_left = 1;
+            }
+        }
+}
+
 
 void play() {
   // create the window
@@ -430,7 +528,39 @@ void play() {
           {
               cameraHandling(clk, prev_time, camera.type, true);
           }
+          // keyboard robot control
+          if (event.key.code == sf::Keyboard::Up)
+          {
+              robot.right_wheel_velocity = 5.0;
+              robot.left_wheel_velocity = 5.0;
+          }
+          if (event.key.code == sf::Keyboard::Down)
+          {
+              robot.right_wheel_velocity = -5.0;
+              robot.left_wheel_velocity = -5.0;
+          }
+          if (event.key.code == sf::Keyboard::Right)
+          {
+              robot.right_wheel_velocity = 5.0;
+              robot.left_wheel_velocity = -5.0;
+          }
+          if (event.key.code == sf::Keyboard::Left)
+          {
+              robot.right_wheel_velocity = -5.0;
+              robot.left_wheel_velocity = 5.0;
+          }
       }
+
+      if(event.type == sf::Event::KeyReleased)
+      {
+            if(event.key.code == sf::Keyboard::Up || event.key.code == sf::Keyboard::Down || event.key.code == sf::Keyboard::Right || event.key.code == sf::Keyboard::Left)
+            {
+                robot.right_wheel_velocity = 0.0;
+                robot.left_wheel_velocity = 0.0;
+            }
+      }
+
+
     }
 
     // clear the buffers
@@ -441,80 +571,24 @@ void play() {
     // draw stuff
     glPushMatrix();
 
-    //robot control and collision check
-    robot.prev_collision = robot.collision;
+    //keyboard_robot_control();
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || input.find("left") != std::string::npos) {
-      robot.rot_z -= (clk.restart().asSeconds() - prev_time) * robot.angular_velocity;
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || input.find("right") != std::string::npos) {
-      robot.rot_z += (clk.restart().asSeconds() - prev_time) * robot.angular_velocity;
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || input.find("up") != std::string::npos) {
-        robot.new_x = robot.x + (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * cos(robot.rot_z * PI / 180);
-      if (abs(robot.new_x - (room_width / 2)) > robot.radius && abs(robot.new_x + (room_width / 2)) > robot.radius) {
-        robot.x = robot.new_x;
+    robot_movement(clk,prev_time,room_width,room_length);
 
-        if(robot.prev_collision)
-        {
-            robot.collision = 0;
-            serial -> write("ok");
-        }
-      } else {
-          if(!robot.prev_collision)
-          {
-              serial -> write("collision");
-              robot.collision = 1;
-          }
-      }
-      robot.new_y = robot.y + (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * sin(robot.rot_z * PI / 180);
-      if (abs(robot.new_y - (room_length / 2)) > robot.radius && abs(robot.new_y + (room_length / 2)) > robot.radius) {
-        robot.y = robot.new_y;
-        if(robot.prev_collision)
-        {
-            robot.collision = 0;
-            serial -> write("ok");
-        }
-      } else{
-          if(!robot.prev_collision)
-          {
-              serial -> write("collision");
-              robot.collision = 1;
-          }
+    //convert rotation for 0-360 degrees only
+    if(robot.rot_z>=0){
+        robot.rot_z_0_360 = (int)robot.rot_z%360;
+    } else {
+        robot.rot_z_0_360 = abs((int)(360+robot.rot_z)%360);
+    }
 
-      }
+    //collisions case
+    collisions();
 
-      //std::cout << robot.x << " - " << robot.y << std::endl;
-      robot.new_x = robot.x - (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * cos(robot.rot_z * PI / 180);
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || input.find("down") != std::string::npos) {
-      if (abs(robot.new_x - (room_width / 2)) > robot.radius && abs(robot.new_x + (room_width / 2)) > robot.radius) {
-        robot.x = robot.new_x;
-        if(robot.prev_collision)
-        {
-            robot.collision = 0;
-            serial -> write("ok");
-        }
-      } else {
 
-          if(!robot.prev_collision)
-          {
-              serial -> write("collision");
-              robot.collision = 1;
-          }
-      }
-      robot.new_y = robot.y - (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * sin(robot.rot_z * PI / 180);
-      if (abs(robot.new_y - (room_length / 2)) > robot.radius && abs(robot.new_y + (room_length / 2)) > robot.radius) {
-        if(robot.prev_collision)
-        {
-            robot.collision = 0;
-            serial -> write("ok");
-        }
-      } else {
-          if(!robot.prev_collision)
-          {
-              serial -> write("collision");
-              robot.collision = 1;
-          }
-      }
-      std::cout << robot.x << " - " << robot.y << std::endl;
+    if(robot.collision_front || robot.collision_rear || robot.collision_right || robot.collision_left){
+        output = "collision";
+        serial->write(output);
     }
 
     //camera movement
@@ -546,8 +620,6 @@ void play() {
     if (readData.toStdString().length() > 0) {
         posOfsep = 0;
         input = readData.toStdString();
-        //std::cout<<input<<std::endl;
-
       //RECEIVED COMMAND "CAMERA" - CHANGE CAMERA
       if(input.find("camera") != std::string::npos)
       {
@@ -563,22 +635,16 @@ void play() {
 
       output =QString::fromStdString(data[1]).toUtf8();
       serial -> write(output);
-
+      std::cout<<data[0]<<std::endl;
       control = data[0];
 
-
+      velocity_extraction(control);
 
       data.clear();
 
     }
 
-
-    //sendTime = std::stol(data[0]);
-
     prev_time = clk.restart().asSeconds();
-
-    // std::cout << eye_x << " " << eye_y << " " << eye_z << std::endl;
-
   }
 
   serial -> close();

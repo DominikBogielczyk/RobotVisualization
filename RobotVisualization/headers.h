@@ -9,6 +9,9 @@
 #include <ctime>
 #include <sys/time.h>
 #include <string>
+#include <regex>
+#include <QRegularExpression>
+#include <vector>
 
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
