@@ -3,6 +3,7 @@
 
 #pragma once
 #include <iostream>
+#include <fstream>
 #include <cmath>
 #include "windows.h"
 #include <chrono>
@@ -12,6 +13,7 @@
 #include <regex>
 #include <QRegularExpression>
 #include <vector>
+
 
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>

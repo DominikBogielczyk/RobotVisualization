@@ -100,12 +100,12 @@ class MainActivity : AppCompatActivity() {
             true
         }
         imageLeft.setOnTouchListener { v: View, m: MotionEvent ->
-            textToSend = "wp" + velocityLeft.toString() + "wl" + (-velocityLeft).toString()
+            textToSend = "wp" + (-velocityLeft).toString() + "wl" + velocityLeft.toString()
             onTouch(m, textToSend, sendStop = true, imageLeft)
             true
         }
         imageRight.setOnTouchListener { v: View, m: MotionEvent ->
-            textToSend = "wp" + (-velocityLeft).toString() + "wl" + velocityLeft.toString()
+            textToSend = "wp" + velocityLeft.toString() + "wl" + (-velocityLeft).toString()
             onTouch(m, textToSend, sendStop = true, imageRight)
             true
         }

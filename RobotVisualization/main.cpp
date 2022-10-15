@@ -1,7 +1,7 @@
 #include "headers.h"
 
 #define PI 3.14159265
-#define port "COM3"
+#define port "COM7"
 
 enum cameraType
 {
@@ -437,6 +437,15 @@ void play() {
 
   float prev_time = 0;
 
+  sf::Clock plot_clock;
+  int from_prev_plot = 0;
+
+  std::ofstream myfile;
+  //CLEAR THE FILE
+  myfile.open("robot_data.txt");
+  myfile << "x;y;v,ω;ωL;ωP\n";
+  myfile.close();
+
   //1200cm x 800cm x 250cm
   const double room_width = 1200.0;
   const double room_length = 800.0;
@@ -523,6 +532,7 @@ void play() {
     while (window.pollEvent(event)) {
       if (event.type == sf::Event::Closed) {
         running = false;
+        printf("\n");
       }
       if (event.type == sf::Event::KeyPressed)
       {
@@ -616,6 +626,17 @@ void play() {
     draw_floor(room_width, room_length);
     draw_walls(room_width, room_length, room_height);
     draw_doors(doors_height,doors_width,doors_position);
+
+    //new data to plot every 100ms
+    from_prev_plot += plot_clock.restart().asMilliseconds();
+    if(from_prev_plot >= 100)
+    {
+        myfile.open("robot_data.txt", std::ios::app);
+        myfile << robot.x << ";" << robot.y << ";" << robot.linear_velocity << ";" << robot.angular_velocity << ";" <<
+                  robot.left_wheel_velocity << ";" << robot.right_wheel_velocity << "\n";
+        myfile.close();
+        from_prev_plot = 0;
+    }
 
     glTranslated(robot.x, robot.y, 0.0);
     glRotated(0, 1.0, 0.0, 0.0);
