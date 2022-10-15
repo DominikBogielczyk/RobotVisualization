@@ -23,7 +23,7 @@ plot[1][1].set_title('PRĘDKOŚĆ OBROTOWA ROBOTA')
 plot[1][1].set_xlabel('t [s]')
 plot[1][1].set_ylabel('omega')
 
-loaded_lines = 1
+loaded_lines = 0
 x_list = []
 y_list = []
 v_list = []
@@ -39,7 +39,7 @@ def animate(i):
     global loaded_lines
 
     for i, line in enumerate(lines):
-        if i >= loaded_lines and len(line) > 1:
+        if i > loaded_lines and len(line) > 1:
             x, y, v, ω, ωL, ωP = line.split(';')
             x_list.append(float(x))
             y_list.append(float(y))
