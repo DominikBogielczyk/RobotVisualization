@@ -1,7 +1,7 @@
 #include "headers.h"
 
 #define PI 3.14159265
-#define port "COM7"
+#define port "COM3"
 
 enum cameraType
 {
@@ -148,51 +148,79 @@ void draw_cube(double robot_size_x, double robot_size_y, double robot_size_z, do
 
 }
 
-void draw_traffic_cone(int x, int y)
-{
-    int num = 30;
 
+
+
+class TrafficCone{
+    public:
+
+    int num = 30;
     float h = 50;
     float r_up = 3;
     float r_down = 14;
     int dz = 1;
+    float pos_x;
+    float pos_y;
 
-    float h1 = 0.7*h;
-    float r1 = (r_up-r_down)*0.7 + r_down;
-    float h2 = 0.35*h;
-    float r2 = (r_up-r_down)*0.35 + r_down;
-
-    glBegin(GL_QUAD_STRIP);
-    glColor3f(255/255.f, 69/255.f, 0.f);
-    for (int i = 0; i <= num; i++) {
-      glVertex3f(x + r_up * cos(i * 2 * PI / num), y + r_up * sin(i * 2 * PI / num), dz + h);
-      glVertex3f(x + r1 * cos(i * 2 * PI / num), y + r1 * sin(i * 2 * PI / num), dz + h1);
-      glVertex3f(x + r_up * cos((i+1) * 2 * PI / num), y + r_up * sin((i+1) * 2 * PI / num), dz + h);
-      glVertex3f(x + r1 * cos((i+1) * 2 * PI / num), y  + r1 * sin((i+1) * 2 * PI / num), dz + h1);
+    TrafficCone(float x,float y){
+        pos_x = x;
+        pos_y = y;
     }
-    glEnd(); //END
 
-    glBegin(GL_QUAD_STRIP);
-    glColor3f(255/255.f, 255/255.f, 255/255.f);
-    for (int i = 0; i <= num; i++) {
-      glVertex3f(x + r1 * cos(i * 2 * PI / num), y + r1 * sin(i * 2 * PI / num), dz + h1);
-      glVertex3f(x + r2 * cos(i * 2 * PI / num), y + r2 * sin(i * 2 * PI / num), dz + h2);
-      glVertex3f(x + r1 * cos((i+1) * 2 * PI / num), y + r1 * sin((i+1) * 2 * PI / num), dz + h1);
-      glVertex3f(x + r2 * cos((i+1) * 2 * PI / num), y  + r2 * sin((i+1) * 2 * PI / num), dz + h2);
+    void draw_traffic_cone()
+    {
+
+        float h1 = 0.7*h;
+        float r1 = (r_up-r_down)*0.7 + r_down;
+        float h2 = 0.35*h;
+        float r2 = (r_up-r_down)*0.35 + r_down;
+
+        glBegin(GL_QUAD_STRIP);
+        glColor3f(255/255.f, 69/255.f, 0.f);
+        for (int i = 0; i <= num; i++) {
+          glVertex3f(pos_x + r_up * cos(i * 2 * PI / num), pos_y + r_up * sin(i * 2 * PI / num), dz + h);
+          glVertex3f(pos_x + r1 * cos(i * 2 * PI / num), pos_y + r1 * sin(i * 2 * PI / num), dz + h1);
+          glVertex3f(pos_x + r_up * cos((i+1) * 2 * PI / num), pos_y + r_up * sin((i+1) * 2 * PI / num), dz + h);
+          glVertex3f(pos_x + r1 * cos((i+1) * 2 * PI / num), pos_y  + r1 * sin((i+1) * 2 * PI / num), dz + h1);
+        }
+        glEnd(); //END
+
+        glBegin(GL_QUAD_STRIP);
+        glColor3f(255/255.f, 255/255.f, 255/255.f);
+        for (int i = 0; i <= num; i++) {
+          glVertex3f(pos_x + r1 * cos(i * 2 * PI / num), pos_y + r1 * sin(i * 2 * PI / num), dz + h1);
+          glVertex3f(pos_x + r2 * cos(i * 2 * PI / num), pos_y + r2 * sin(i * 2 * PI / num), dz + h2);
+          glVertex3f(pos_x + r1 * cos((i+1) * 2 * PI / num), pos_y + r1 * sin((i+1) * 2 * PI / num), dz + h1);
+          glVertex3f(pos_x + r2 * cos((i+1) * 2 * PI / num), pos_y  + r2 * sin((i+1) * 2 * PI / num), dz + h2);
+        }
+        glEnd(); //END
+
+        glBegin(GL_QUAD_STRIP);
+        glColor3f(255/255.f, 69/255.f, 0.f);
+        for (int i = 0; i <= num; i++) {
+          glVertex3f(pos_x + r2 * cos(i * 2 * PI / num), pos_y + r2 * sin(i * 2 * PI / num), dz + h2);
+          glVertex3f(pos_x + r_down * cos(i * 2 * PI / num), pos_y + r_down * sin(i * 2 * PI / num), dz);
+          glVertex3f(pos_x + r2 * cos((i+1) * 2 * PI / num), pos_y + r2 * sin((i+1) * 2 * PI / num), dz + h2);
+          glVertex3f(pos_x + r_down * cos((i+1) * 2 * PI / num), pos_y  + r_down * sin((i+1) * 2 * PI / num), dz);
+        }
+        glEnd(); //END
+
+        draw_cube(35, 35, 2, 1, pos_x, pos_y);
     }
-    glEnd(); //END
 
-    glBegin(GL_QUAD_STRIP);
-    glColor3f(255/255.f, 69/255.f, 0.f);
-    for (int i = 0; i <= num; i++) {
-      glVertex3f(x + r2 * cos(i * 2 * PI / num), y + r2 * sin(i * 2 * PI / num), dz + h2);
-      glVertex3f(x + r_down * cos(i * 2 * PI / num), y + r_down * sin(i * 2 * PI / num), dz);
-      glVertex3f(x + r2 * cos((i+1) * 2 * PI / num), y + r2 * sin((i+1) * 2 * PI / num), dz + h2);
-      glVertex3f(x + r_down * cos((i+1) * 2 * PI / num), y  + r_down * sin((i+1) * 2 * PI / num), dz);
+    void change_position(float robot_linear_velocity,sf::Clock clk,float prev_time,float rot_z){
+        pos_x += (clk.restart().asSeconds() - prev_time) * robot_linear_velocity * 1.05 * cos(rot_z * PI / 180);
+        pos_y += (clk.restart().asSeconds() - prev_time) * robot_linear_velocity * 1.05 * sin(rot_z * PI / 180);
     }
-    glEnd(); //END
 
-    draw_cube(35, 35, 2, 1, x, y);
+};
+
+bool traffic_cone_robot_collisions(TrafficCone trafficcone){
+    if(sqrt(pow(robot.x-trafficcone.pos_x,2)+pow(robot.y-trafficcone.pos_y,2))<=robot.radius+trafficcone.r_down){
+        return true;
+    } else{
+        return false;
+    }
 }
 
 void draw_robot() {
@@ -574,6 +602,13 @@ void play() {
   QSerialPort * serial = new QSerialPort();
   running = connectBluetooth(serial);
 
+  std::vector<TrafficCone> trafficCones;
+
+  for(int i=1; i<=2; i++)
+  {
+      trafficCones.push_back(TrafficCone(i*100,i*100));
+  }
+
   while (running) {
     sf::Event event;
     while (window.pollEvent(event)) {
@@ -642,6 +677,11 @@ void play() {
     //collisions case
     collisions();
 
+    for(int i=0;i<trafficCones.size();i++){
+        if(traffic_cone_robot_collisions(trafficCones[i])){
+            trafficCones[i].change_position(robot.linear_velocity,clk,prev_time,robot.rot_z);
+        }
+    }
 
 
     //send message if is collision or not
@@ -685,9 +725,9 @@ void play() {
         from_prev_plot = 0;
     }
 
-    for(int i=1; i<=2; i++)
+    for(int i=0; i<trafficCones.size(); i++)
     {
-        draw_traffic_cone(100*i, 100*i);
+        trafficCones[i].draw_traffic_cone();
     }
 
 
