@@ -22,7 +22,7 @@ struct {
   const double from_ground = 3.0;
   const double wheel_width = 1.0;
   const double wheel_radius = height - from_ground;
-  const double track_between_wheels = radius * 2;
+  const double track_between_wheels = 10.0;
 
   float x = 0;
   float y = 0;
@@ -454,8 +454,8 @@ void collisions() {
 void robot_movement(sf::Clock clk, float prev_time, double room_width, double room_length) {
 
   // conversion from right and left wheels velocities to angular and linear velocities
-  robot.linear_velocity = (robot.right_wheel_velocity + robot.left_wheel_velocity) * 5 * robot.wheel_radius / 2;
-  robot.angular_velocity = (robot.right_wheel_velocity - robot.left_wheel_velocity) * 10 * robot.wheel_radius / robot.track_between_wheels;
+  robot.linear_velocity = (robot.right_wheel_velocity + robot.left_wheel_velocity) * robot.wheel_radius / 2;
+  robot.angular_velocity = (robot.right_wheel_velocity - robot.left_wheel_velocity) * robot.wheel_radius / robot.track_between_wheels;
 
   // calculate ratational movement of robot
   robot.rot_z += (clk.restart().asSeconds() - prev_time) * robot.angular_velocity;
@@ -602,20 +602,20 @@ void play() {
         }
         // keyboard robot control
         if (event.key.code == sf::Keyboard::Up) {
-          robot.right_wheel_velocity = 5.0;
-          robot.left_wheel_velocity = 5.0;
+          robot.right_wheel_velocity = 25.0;
+          robot.left_wheel_velocity = 25.0;
         }
         if (event.key.code == sf::Keyboard::Down) {
-          robot.right_wheel_velocity = -5.0;
-          robot.left_wheel_velocity = -5.0;
+          robot.right_wheel_velocity = -25.0;
+          robot.left_wheel_velocity = -25.0;
         }
         if (event.key.code == sf::Keyboard::Right) {
-          robot.right_wheel_velocity = 5.0;
-          robot.left_wheel_velocity = -5.0;
+          robot.right_wheel_velocity = 25.0;
+          robot.left_wheel_velocity = -25.0;
         }
         if (event.key.code == sf::Keyboard::Left) {
-          robot.right_wheel_velocity = -5.0;
-          robot.left_wheel_velocity = 5.0;
+          robot.right_wheel_velocity = -25.0;
+          robot.left_wheel_velocity = 25.0;
         }
       }
 
