@@ -1,7 +1,7 @@
 #include "headers.h"
 
 #define PI 3.14159265
-#define port "COM7"
+#define port "COM3"
 
 enum cameraType {
   external = 0,
@@ -24,15 +24,19 @@ struct {
   const double wheel_radius = height - from_ground;
   const double track_between_wheels = radius * 2;
 
-  float x = 0;
+  float x = 400;
   float y = 0;
-  float prev_x = 0;
+  float prev_x = 400;
   float prev_y = 0;
   float rot_z_0_360 = 0;
   float rot_z = 0;
 
   float left_wheel_velocity = 0.0;
   float right_wheel_velocity = 0.0;
+  float prev_left_wheel_velocity = 0.0;
+  float prev_right_wheel_velocity = 0.0;
+  float left_wheel_velocity_ref = 0.0;
+  float right_wheel_velocity_ref = 0.0;
 
   float angular_velocity = 0.0;
   float linear_velocity = 0.0;
@@ -42,8 +46,78 @@ struct {
   bool collision_left = 0;
   bool collision = 0;
   bool last_collision = 0;
+
+  //MOTORS PARAMETERS
+  float Kt = 0.062;
+  float Kb = 0.062;
+  float J = 0.0551;
+  float B =0.188;
+  float Re = 0.56;
+  float Le = 0.97 * 0.001;
+
+  //TRANFER FUNCTION PARAMETERES
+  float a0 = 0.00246;
+  float a1 = 0.1668;
+  float b0 = 7.794*pow(10,-17);
+  float b1 = -0.7021;
+  float b2 = 1;
+
+  //
+  float u_1 = 0;
+  float u_2 = 0;
+  float w_1 = 0;
+  float w_2 = (a1*u_1 - b1*w_1)/b2;
+
+
 }
 robot;
+
+struct{
+    float k = 0.57;
+    float T = 0.27;
+    float tau = 0.3;
+    float Kp = 1.2*T/(tau*k);
+    float Ti = 2*tau;
+    float Td = 0;
+    float pre_err = 0;
+    float pre_int = 0;
+    float dt =0.1;
+}
+regulatorPID;
+
+float PID_control(float sig_ref,float y){
+    float error = sig_ref - y;
+
+    float P = regulatorPID.Kp * error;
+
+    float integral = regulatorPID.pre_int + error * regulatorPID.dt;
+    regulatorPID.pre_int = integral;
+    float I = (regulatorPID.Kp/regulatorPID.Ti)*integral;
+
+    float derivative = (error - regulatorPID.pre_err)/regulatorPID.dt;
+    regulatorPID.pre_err = error;
+    float D = regulatorPID.Kp * regulatorPID.Td * derivative;
+
+    float U = P + I + D;
+
+    if(U>=24){
+        return 24.0;
+    } else if(U<=-24.0){
+        return -24.0;
+    } else {
+        return U;
+    }
+}
+
+float object_respond(float u_ster){
+     float y = (robot.a1*robot.u_1 + robot.a0*robot.u_2 - robot.b1*robot.w_1 - robot.b0 * robot.w_2)/robot.b2;
+     robot.w_2 = robot.w_1;
+     robot.w_1 = y;
+     robot.u_2 = robot.u_1;
+     robot.u_1 = u_ster;
+
+     return y;
+}
 
 void draw_circle(int x, int y, double radius, double width, double rot, char color, double dz = 0.0) {
 
@@ -149,13 +223,14 @@ void draw_cube(double robot_size_x, double robot_size_y, double robot_size_z, do
 class TrafficCone {
   public:
 
-    int num = 30;
+  int num = 30;
   float h = 50;
   float r_up = 3;
   float r_down = 14;
   int dz = 1;
   float pos_x;
   float pos_y;
+  float cube_length = 35;
 
   TrafficCone(float x, float y) {
     pos_x = x;
@@ -199,7 +274,7 @@ class TrafficCone {
     }
     glEnd(); //END
 
-    draw_cube(35, 35, 2, 1, pos_x, pos_y);
+    draw_cube(cube_length, cube_length, 2, 1, pos_x, pos_y);
   }
 
   void change_position(float robot_linear_velocity, sf::Clock clk, float prev_time, float rot_z) {
@@ -214,8 +289,41 @@ bool traffic_cone_robot_collisions(TrafficCone trafficcone) {
     return true;
   } else {
     return false;
-  }
+  } 
 }
+
+bool traffic_cone_x_axis_walls_collisions(TrafficCone trafficcone,double room_width){
+    if((trafficcone.pos_x-trafficcone.cube_length/2) > -room_width/2 && (trafficcone.pos_x+trafficcone.cube_length/2) < room_width/2){
+        return false;
+    } else {
+        return true;
+    }
+}
+
+bool traffic_cone_y_axis_walls_collisions(TrafficCone trafficcone,double room_length){
+    if((trafficcone.pos_y-trafficcone.cube_length/2) > -room_length/2 && (trafficcone.pos_y+trafficcone.cube_length/2) < room_length/2){
+        return false;
+    } else {
+        return true;
+    }
+}
+
+bool traffic_cones_axis_collision(TrafficCone trafficcone1,TrafficCone trafficcone2){
+    if(abs(trafficcone1.pos_x-trafficcone2.pos_x)<(trafficcone1.cube_length/2+trafficcone2.cube_length/2) && abs(trafficcone1.pos_y-trafficcone2.pos_y)<(trafficcone1.cube_length/2+trafficcone2.cube_length/2)){
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool traffic_cones_y_axis_collision(TrafficCone trafficcone1,TrafficCone trafficcone2){
+    if(abs(trafficcone1.pos_y-trafficcone2.pos_y)<(trafficcone1.cube_length/2+trafficcone2.cube_length/2)){
+        return true;
+    } else {
+        return false;
+    }
+}
+
 
 void draw_robot() {
   const double from_ground = robot.from_ground;
@@ -405,8 +513,10 @@ void velocity_extraction(std::string text) {
     std::regex_search(text, sm1, re1);
     std::regex_search(text, sm2, re2);
 
-    robot.right_wheel_velocity = std::stof(sm1[2]);
-    robot.left_wheel_velocity = std::stof(sm2[2]);
+    robot.prev_left_wheel_velocity = robot.left_wheel_velocity;
+    robot.prev_right_wheel_velocity = robot.right_wheel_velocity;
+    robot.right_wheel_velocity_ref = std::stof(sm1[2]);
+    robot.left_wheel_velocity_ref = std::stof(sm2[2]);
 
   }
 }
@@ -580,13 +690,16 @@ void play() {
   std::string dataToCut;
   std::string control;
 
+  float u_ster_lw;
+  float u_ster_rw;
+
   QSerialPort * serial = new QSerialPort();
   running = connectBluetooth(serial);
 
   std::vector < TrafficCone > trafficCones;
 
-  for (int i = 1; i <= 2; i++) {
-    trafficCones.push_back(TrafficCone(i * 100, i * 100));
+  for (int i = 0; i <= 2; i++) {
+    trafficCones.push_back(TrafficCone(-i * 150 + 100, 0));
   }
 
   while (running) {
@@ -602,27 +715,27 @@ void play() {
         }
         // keyboard robot control
         if (event.key.code == sf::Keyboard::Up) {
-          robot.right_wheel_velocity = 5.0;
-          robot.left_wheel_velocity = 5.0;
+          robot.right_wheel_velocity_ref = 5.0;
+          robot.left_wheel_velocity_ref = 5.0;
         }
         if (event.key.code == sf::Keyboard::Down) {
-          robot.right_wheel_velocity = -5.0;
-          robot.left_wheel_velocity = -5.0;
+          robot.right_wheel_velocity_ref = -5.0;
+          robot.left_wheel_velocity_ref = -5.0;
         }
         if (event.key.code == sf::Keyboard::Right) {
-          robot.right_wheel_velocity = 5.0;
-          robot.left_wheel_velocity = -5.0;
+          robot.right_wheel_velocity_ref = 5.0;
+          robot.left_wheel_velocity_ref = -5.0;
         }
         if (event.key.code == sf::Keyboard::Left) {
-          robot.right_wheel_velocity = -5.0;
-          robot.left_wheel_velocity = 5.0;
+          robot.right_wheel_velocity_ref = -5.0;
+          robot.left_wheel_velocity_ref = 5.0;
         }
       }
 
       if (event.type == sf::Event::KeyReleased) {
         if (event.key.code == sf::Keyboard::Up || event.key.code == sf::Keyboard::Down || event.key.code == sf::Keyboard::Right || event.key.code == sf::Keyboard::Left) {
-          robot.right_wheel_velocity = 0.0;
-          robot.left_wheel_velocity = 0.0;
+          robot.right_wheel_velocity_ref = 0.0;
+          robot.left_wheel_velocity_ref = 0.0;
         }
       }
 
@@ -635,6 +748,15 @@ void play() {
 
     // draw stuff
     glPushMatrix();
+
+    //ROBOT MOVEMENT
+    u_ster_lw = PID_control(robot.left_wheel_velocity_ref,robot.left_wheel_velocity);
+    u_ster_rw = PID_control(robot.right_wheel_velocity_ref,robot.right_wheel_velocity);
+
+    robot.left_wheel_velocity = object_respond(u_ster_lw);
+    robot.right_wheel_velocity = object_respond(u_ster_rw);
+
+    std::cout<<"left wheel velocity: "<<robot.left_wheel_velocity<<" right wheel velocity: "<<robot.right_wheel_velocity<<std::endl;
 
     robot_movement(clk, prev_time, room_width, room_length);
 
@@ -650,7 +772,9 @@ void play() {
 
     for (size_t i = 0; i < trafficCones.size(); i++) {
       if (traffic_cone_robot_collisions(trafficCones[i])) {
-        trafficCones[i].change_position(robot.linear_velocity, clk, prev_time, robot.rot_z);
+        trafficCones[i].pos_x += (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * cos(robot.rot_z * PI / 180);
+        trafficCones[i].pos_y += (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * sin(robot.rot_z * PI / 180);
+        std::cout<<"Collision with traffic cone!"<<std::endl;
       }
     }
 
@@ -709,13 +833,11 @@ void play() {
 
     window.display();
 
+    //READ DATA FROM CONNECTED BLUETOOTH DEVICE
     readData = serial -> readAll();
     serial -> waitForReadyRead(10);
 
-    auto receiveTime = std::chrono::duration_cast < std::chrono::milliseconds > (std::chrono::system_clock::now().time_since_epoch()).count();
-
     if (readData.toStdString().length() > 0) {
-      posOfsep = 0;
       input = readData.toStdString();
 
       //RECEIVED COMMAND "CAMERA" - CHANGE CAMERA
@@ -725,16 +847,18 @@ void play() {
 
       dataToCut = input;
 
+      //SEPERATE DATA FROM CONNECTED BLUETOOTH DEVICE
       while ((posOfsep = dataToCut.find(separation_sign)) != std::string::npos) {
         data.push_back(dataToCut.substr(0, posOfsep));
         dataToCut.erase(0, posOfsep + separation_sign.length());
       }
 
+      //SEND RESPOND THAT DATA CAME SUCCESFULLY
       output = QString::fromStdString(data[1]).toUtf8();
       serial -> write(output);
-      std::cout << data[0] << std::endl;
-      control = data[0];
 
+      //TRANSFORM VELOCITY DATA FROM CONNECTED DEVICE TO VELOCITIES OF ROBOT
+      control = data[0];
       velocity_extraction(control);
 
       data.clear();
@@ -744,6 +868,7 @@ void play() {
     prev_time = clk.restart().asSeconds();
   }
 
+  //CLOSE SERIAL PORT AFTER CLOSING APPLICATION
   serial -> close();
 
 }
