@@ -1,7 +1,7 @@
 #include "headers.h"
 
 #define PI 3.14159265
-#define port "COM3"
+#define port "COM7"
 
 enum cameraType {
   external = 0,
@@ -51,14 +51,14 @@ struct {
   float Kt = 0.062;
   float Kb = 0.062;
   float J = 0.0551;
-  float B =0.188;
+  float B = 0.188;
   float Re = 0.56;
   float Le = 0.97 * 0.001;
 
   //TRANFER FUNCTION PARAMETERES
   float a0 = 0.00246;
-  float a1 = 0.1668;
-  float b0 = 7.794*pow(10,-17);
+  float a1 = 1.6682;
+  float b0 = 0.0;
   float b1 = -0.7021;
   float b2 = 1;
 
@@ -73,9 +73,10 @@ struct {
 robot;
 
 struct{
-    float k = 0.57;
+    int n = 10;
+    float k = n * 0.57;
     float T = 0.27;
-    float tau = 0.3;
+    float tau = 0.4;
     float Kp = 1.2*T/(tau*k);
     float Ti = 2*tau;
     float Td = 0;
@@ -100,10 +101,10 @@ float PID_control(float sig_ref,float y){
 
     float U = P + I + D;
 
-    if(U>=24){
-        return 24.0;
-    } else if(U<=-24.0){
-        return -24.0;
+    if(U>=12){
+        return 12.0;
+    } else if(U<=-12.0){
+        return -12.0;
     } else {
         return U;
     }
@@ -702,7 +703,13 @@ void play() {
     trafficCones.push_back(TrafficCone(-i * 150 + 100, 0));
   }
 
+  int fps = 50;
+
   while (running) {
+
+      prev_time += clk.restart().asSeconds();
+      if(prev_time > 1.0/fps)
+      {
     sf::Event event;
     while (window.pollEvent(event)) {
       if (event.type == sf::Event::Closed) {
@@ -715,20 +722,20 @@ void play() {
         }
         // keyboard robot control
         if (event.key.code == sf::Keyboard::Up) {
-          robot.right_wheel_velocity = 25.0;
-          robot.left_wheel_velocity = 25.0;
+          robot.right_wheel_velocity_ref = 25.0;
+          robot.left_wheel_velocity_ref = 25.0;
         }
         if (event.key.code == sf::Keyboard::Down) {
-          robot.right_wheel_velocity = -25.0;
-          robot.left_wheel_velocity = -25.0;
+          robot.right_wheel_velocity_ref = -25.0;
+          robot.left_wheel_velocity_ref = -25.0;
         }
         if (event.key.code == sf::Keyboard::Right) {
-          robot.right_wheel_velocity = 25.0;
-          robot.left_wheel_velocity = -25.0;
+          robot.right_wheel_velocity_ref = 25.0;
+          robot.left_wheel_velocity_ref = -25.0;
         }
         if (event.key.code == sf::Keyboard::Left) {
-          robot.right_wheel_velocity = -25.0;
-          robot.left_wheel_velocity = 25.0;
+          robot.right_wheel_velocity_ref = -25.0;
+          robot.left_wheel_velocity_ref = 25.0;
         }
       }
 
@@ -757,7 +764,6 @@ void play() {
     robot.right_wheel_velocity = object_respond(u_ster_rw);
 
     std::cout<<"left wheel velocity: "<<robot.left_wheel_velocity<<" right wheel velocity: "<<robot.right_wheel_velocity<<std::endl;
-
     robot_movement(clk, prev_time, room_width, room_length);
 
     //convert rotation for 0-360 degrees only
@@ -809,6 +815,8 @@ void play() {
 
     //new data to plot every 100ms
     from_prev_plot += plot_clock.restart().asMilliseconds();
+
+
     if (from_prev_plot >= 100) {
       myfile.open("robot_data.txt", std::ios::app);
       myfile << robot.x << ";" << robot.y << ";" << robot.linear_velocity << ";" << robot.angular_velocity << ";" <<
@@ -865,7 +873,8 @@ void play() {
 
     }
 
-    prev_time = clk.restart().asSeconds();
+    prev_time = 0;
+  }
   }
 
   //CLOSE SERIAL PORT AFTER CLOSING APPLICATION
