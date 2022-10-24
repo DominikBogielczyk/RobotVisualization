@@ -715,20 +715,20 @@ void play() {
         }
         // keyboard robot control
         if (event.key.code == sf::Keyboard::Up) {
-          robot.right_wheel_velocity = 25.0;
-          robot.left_wheel_velocity = 25.0;
+          robot.right_wheel_velocity_ref = 10.0;
+          robot.left_wheel_velocity_ref = 10.0;
         }
         if (event.key.code == sf::Keyboard::Down) {
-          robot.right_wheel_velocity = -25.0;
-          robot.left_wheel_velocity = -25.0;
+          robot.right_wheel_velocity_ref = -10.0;
+          robot.left_wheel_velocity_ref = -10.0;
         }
         if (event.key.code == sf::Keyboard::Right) {
-          robot.right_wheel_velocity = 25.0;
-          robot.left_wheel_velocity = -25.0;
+          robot.right_wheel_velocity_ref = -10.0;
+          robot.left_wheel_velocity_ref = 10.0;
         }
         if (event.key.code == sf::Keyboard::Left) {
-          robot.right_wheel_velocity = -25.0;
-          robot.left_wheel_velocity = 25.0;
+          robot.right_wheel_velocity_ref = 10.0;
+          robot.left_wheel_velocity_ref = -10.0;
         }
       }
 
