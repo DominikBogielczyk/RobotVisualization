@@ -1,10 +1,11 @@
 #include "headers.h"
+#include "trafficcone.h"
+#include <drawingfunctions.h>
 
-#define PI 3.14159265
 #define port "COM3"
 
 enum cameraType {
-  external = 0,
+    external = 0,
     internal = 1
 };
 
@@ -111,6 +112,7 @@ float PID_control(float sig_ref,float y){
 
 float object_respond(float u_ster){
      float y = (robot.a1*robot.u_1 + robot.a0*robot.u_2 - robot.b1*robot.w_1 - robot.b0 * robot.w_2)/robot.b2;
+
      robot.w_2 = robot.w_1;
      robot.w_1 = y;
      robot.u_2 = robot.u_1;
@@ -119,171 +121,6 @@ float object_respond(float u_ster){
      return y;
 }
 
-void draw_circle(int x, int y, double radius, double width, double rot, char color, double dz = 0.0) {
-
-  switch (color) {
-  case 'g':
-    glColor3f(0 / 255.f, 0 / 255.f, 0 / 255.f); //BLACK
-    break;
-  case 'b':
-    glColor3d(0 / 255.f, 0 / 255.f, 153 / 255.f); //BLUE
-    break;
-  case 't':
-    glColor4d(0.5, 0.5, 0.4, 0.0); //TRANSPARENT
-    break;
-  }
-
-  glPushMatrix();
-  glRotated(rot, 1.0, 0.0, 0.0);
-  glRotated(0, 0.0, 1.0, 0.0);
-  glRotated(0, 0, 0.0, 1.0);
-
-  int num = 40;
-
-  glBegin(GL_TRIANGLE_FAN); //BEGIN CIRCLE
-  glVertex3f(x, y, radius); // center of circle
-  for (int i = 0; i <= num; i++) {
-    glVertex3f(x + radius * cos(i * 2 * PI / num), y, radius + radius * sin(i * 2 * PI / num) + dz);
-  }
-  glEnd(); //END
-
-  glBegin(GL_QUAD_STRIP); //BEGIN CIRCLE
-  for (int i = 0; i <= num; i++) {
-    glVertex3f(x + radius * cos(i * 2 * PI / num), y, radius + radius * sin(i * 2 * PI / num) + dz);
-    glVertex3f(x + radius * cos(i * 2 * PI / num), y + width, radius + radius * sin(i * 2 * PI / num) + dz);
-    glVertex3f(x + radius * cos((i + 1) * 2 * PI / num), y, radius + radius * sin((i + 1) * 2 * PI / num) + dz);
-    glVertex3f(x + radius * cos((i + 1) * 2 * PI / num), y + width, radius + radius * sin((i + 1) * 2 * PI / num) + dz);
-  }
-  glEnd(); //END
-
-  glBegin(GL_TRIANGLE_FAN); //BEGIN CIRCLE
-  glVertex3f(x, y, radius); // center of circle
-  for (int i = 0; i <= num; i++) {
-    glVertex3f(x + radius * cos(i * 2 * PI / num), y + width, radius + radius * sin(i * 2 * PI / num) + dz);
-  }
-  glEnd(); //END
-}
-
-void draw_cube(double robot_size_x, double robot_size_y, double robot_size_z, double middle_z, int dx = 0, int dy = 0) {
-  double half_size_x = robot_size_x / 2.0;
-  double half_size_y = robot_size_y / 2.0;
-  double half_size_z = robot_size_z / 2.0;
-
-  //glColor3d(0.5, 0.5, 0.4); //GREY
-  // bottom
-  glBegin(GL_POLYGON);
-  glVertex3d(-half_size_x + dx, half_size_y + dy, middle_z - half_size_z);
-  glVertex3d(half_size_x + dx, half_size_y + dy, middle_z - half_size_z);
-  glVertex3d(half_size_x + dx, -half_size_y + dy, middle_z - half_size_z);
-  glVertex3d(-half_size_x + dx, -half_size_y + dy, middle_z - half_size_z);
-  glEnd();
-
-  // top
-  glBegin(GL_POLYGON);
-  glVertex3d(-half_size_x + dx, half_size_y + dy, middle_z + half_size_z);
-  glVertex3d(half_size_x + dx, half_size_y + dy, middle_z + half_size_z);
-  glVertex3d(half_size_x + dx, -half_size_y + dy, middle_z + half_size_z);
-  glVertex3d(-half_size_x + dx, -half_size_y + dy, middle_z + half_size_z);
-  glEnd();
-
-  // left
-  glBegin(GL_POLYGON);
-  glVertex3d(-half_size_x + dx, -half_size_y + dy, middle_z + half_size_z);
-  glVertex3d(-half_size_x + dx, half_size_y + dy, middle_z + half_size_z);
-  glVertex3d(-half_size_x + dx, half_size_y + dy, middle_z - half_size_z);
-  glVertex3d(-half_size_x + dx, -half_size_y + dy, middle_z - half_size_z);
-  glEnd();
-
-  // right
-  glBegin(GL_POLYGON);
-  glVertex3d(half_size_x + dx, -half_size_y + dy, middle_z + half_size_z);
-  glVertex3d(half_size_x + dx, half_size_y + dy, middle_z + half_size_z);
-  glVertex3d(half_size_x + dx, half_size_y + dy, middle_z - half_size_z);
-  glVertex3d(half_size_x + dx, -half_size_y + dy, middle_z - half_size_z);
-  glEnd();
-
-  // front
-  glBegin(GL_POLYGON);
-  glVertex3d(-half_size_x + dx, -half_size_y + dy, middle_z + half_size_z);
-  glVertex3d(half_size_x + dx, -half_size_y + dy, middle_z + half_size_z);
-  glVertex3d(half_size_x + dx, -half_size_y + dy, middle_z - half_size_z);
-  glVertex3d(-half_size_x + dx, -half_size_y + dy, middle_z - half_size_z);
-  glEnd();
-
-  // back
-  glBegin(GL_POLYGON);
-  glVertex3d(-half_size_x + dx, half_size_y + dy, middle_z + half_size_z);
-  glVertex3d(half_size_x + dx, half_size_y + dy, middle_z + half_size_z);
-  glVertex3d(half_size_x + dx, half_size_y + dy, middle_z - half_size_z);
-  glVertex3d(-half_size_x + dx, half_size_y + dy, middle_z - half_size_z);
-  glEnd();
-
-}
-
-class TrafficCone {
-  public:
-
-  int num = 30;
-  float h = 50;
-  float r_up = 3;
-  float r_down = 14;
-  int dz = 1;
-  float pos_x;
-  float pos_y;
-  float cube_length = 35;
-
-  TrafficCone(float x, float y) {
-    pos_x = x;
-    pos_y = y;
-  }
-
-  void draw_traffic_cone() {
-
-    float h1 = 0.7 * h;
-    float r1 = (r_up - r_down) * 0.7 + r_down;
-    float h2 = 0.35 * h;
-    float r2 = (r_up - r_down) * 0.35 + r_down;
-
-    glBegin(GL_QUAD_STRIP);
-    glColor3f(255 / 255.f, 69 / 255.f, 0.f);
-    for (int i = 0; i <= num; i++) {
-      glVertex3f(pos_x + r_up * cos(i * 2 * PI / num), pos_y + r_up * sin(i * 2 * PI / num), dz + h);
-      glVertex3f(pos_x + r1 * cos(i * 2 * PI / num), pos_y + r1 * sin(i * 2 * PI / num), dz + h1);
-      glVertex3f(pos_x + r_up * cos((i + 1) * 2 * PI / num), pos_y + r_up * sin((i + 1) * 2 * PI / num), dz + h);
-      glVertex3f(pos_x + r1 * cos((i + 1) * 2 * PI / num), pos_y + r1 * sin((i + 1) * 2 * PI / num), dz + h1);
-    }
-    glEnd(); //END
-
-    glBegin(GL_QUAD_STRIP);
-    glColor3f(255 / 255.f, 255 / 255.f, 255 / 255.f);
-    for (int i = 0; i <= num; i++) {
-      glVertex3f(pos_x + r1 * cos(i * 2 * PI / num), pos_y + r1 * sin(i * 2 * PI / num), dz + h1);
-      glVertex3f(pos_x + r2 * cos(i * 2 * PI / num), pos_y + r2 * sin(i * 2 * PI / num), dz + h2);
-      glVertex3f(pos_x + r1 * cos((i + 1) * 2 * PI / num), pos_y + r1 * sin((i + 1) * 2 * PI / num), dz + h1);
-      glVertex3f(pos_x + r2 * cos((i + 1) * 2 * PI / num), pos_y + r2 * sin((i + 1) * 2 * PI / num), dz + h2);
-    }
-    glEnd(); //END
-
-    glBegin(GL_QUAD_STRIP);
-    glColor3f(255 / 255.f, 69 / 255.f, 0.f);
-    for (int i = 0; i <= num; i++) {
-      glVertex3f(pos_x + r2 * cos(i * 2 * PI / num), pos_y + r2 * sin(i * 2 * PI / num), dz + h2);
-      glVertex3f(pos_x + r_down * cos(i * 2 * PI / num), pos_y + r_down * sin(i * 2 * PI / num), dz);
-      glVertex3f(pos_x + r2 * cos((i + 1) * 2 * PI / num), pos_y + r2 * sin((i + 1) * 2 * PI / num), dz + h2);
-      glVertex3f(pos_x + r_down * cos((i + 1) * 2 * PI / num), pos_y + r_down * sin((i + 1) * 2 * PI / num), dz);
-    }
-    glEnd(); //END
-
-    draw_cube(cube_length, cube_length, 2, 1, pos_x, pos_y);
-  }
-
-  void change_position(float robot_linear_velocity, sf::Clock clk, float prev_time, float rot_z) {
-    pos_x += (clk.restart().asSeconds() - prev_time) * robot_linear_velocity * 1.05 * cos(rot_z * PI / 180);
-    pos_y += (clk.restart().asSeconds() - prev_time) * robot_linear_velocity * 1.05 * sin(rot_z * PI / 180);
-  }
-
-};
-
 bool traffic_cone_robot_collisions(TrafficCone trafficcone) {
   if (sqrt(pow(robot.x - trafficcone.pos_x, 2) + pow(robot.y - trafficcone.pos_y, 2)) <= robot.radius + trafficcone.r_down) {
     return true;
@@ -291,39 +128,6 @@ bool traffic_cone_robot_collisions(TrafficCone trafficcone) {
     return false;
   } 
 }
-
-bool traffic_cone_x_axis_walls_collisions(TrafficCone trafficcone,double room_width){
-    if((trafficcone.pos_x-trafficcone.cube_length/2) > -room_width/2 && (trafficcone.pos_x+trafficcone.cube_length/2) < room_width/2){
-        return false;
-    } else {
-        return true;
-    }
-}
-
-bool traffic_cone_y_axis_walls_collisions(TrafficCone trafficcone,double room_length){
-    if((trafficcone.pos_y-trafficcone.cube_length/2) > -room_length/2 && (trafficcone.pos_y+trafficcone.cube_length/2) < room_length/2){
-        return false;
-    } else {
-        return true;
-    }
-}
-
-bool traffic_cones_axis_collision(TrafficCone trafficcone1,TrafficCone trafficcone2){
-    if(abs(trafficcone1.pos_x-trafficcone2.pos_x)<(trafficcone1.cube_length/2+trafficcone2.cube_length/2) && abs(trafficcone1.pos_y-trafficcone2.pos_y)<(trafficcone1.cube_length/2+trafficcone2.cube_length/2)){
-        return true;
-    } else {
-        return false;
-    }
-}
-
-bool traffic_cones_y_axis_collision(TrafficCone trafficcone1,TrafficCone trafficcone2){
-    if(abs(trafficcone1.pos_y-trafficcone2.pos_y)<(trafficcone1.cube_length/2+trafficcone2.cube_length/2)){
-        return true;
-    } else {
-        return false;
-    }
-}
-
 
 void draw_robot() {
   const double from_ground = robot.from_ground;
@@ -352,83 +156,6 @@ void draw_robot() {
 
 }
 
-void draw_floor(double width, double length) {
-  glBegin(GL_POLYGON);
-  glColor3f(255 / 255, 255 / 255, 255 / 255);
-  glVertex3d(-width / 2, length / 2, 0);
-  glVertex3d(width / 2, length / 2, 0);
-  glVertex3d(width / 2, -length / 2, 0);
-  glVertex3d(-width / 2, -length / 2, 0);
-  glEnd();
-
-  glColor3d(169 / 255.0, 169 / 255.0, 169 / 255.0);
-
-  glLineWidth(4.0);
-  glColor3f(50 / 255, 50 / 255, 255 / 255);
-
-  int n = 6;
-  for (int i = 1; i < n; i++) {
-    glBegin(GL_LINES);
-    glVertex3f(-width / 2, -length / 2 + i * length / n, 0);
-    glVertex3f(width / 2, -length / 2 + i * length / n, 0);
-    glEnd();
-  }
-  for (int i = 1; i < n; i++) {
-    glBegin(GL_LINES);
-    glVertex3f(-width / 2 + i * width / n, -length / 2, 0);
-    glVertex3f(-width / 2 + i * width / n, length / 2, 0);
-    glEnd();
-  }
-
-}
-
-void draw_walls(double width, double length, double height) {
-  //RIGHT
-  glBegin(GL_POLYGON);
-  glColor3f(50.f / 255, 50.f / 255, 255.f / 255);
-  glVertex3d(-width / 2, length / 2, 0);
-  glVertex3d(width / 2, length / 2, 0);
-  glVertex3d(width / 2, length / 2, height);
-  glVertex3d(-width / 2, length / 2, height);
-  glEnd();
-
-  //LEFT
-  glBegin(GL_POLYGON);
-  glColor3f(50.f / 255, 50.f / 255, 255.f / 255);
-  glVertex3d(-width / 2, -length / 2, 0);
-  glVertex3d(width / 2, -length / 2, 0);
-  glVertex3d(width / 2, -length / 2, height);
-  glVertex3d(-width / 2, -length / 2, height);
-  glEnd();
-
-  //REAR
-  glBegin(GL_POLYGON);
-  glColor3f(51.f / 255, 153.f / 255, 255.f / 255);
-  glVertex3d(-width / 2, -length / 2, 0);
-  glVertex3d(-width / 2, length / 2, 0);
-  glVertex3d(-width / 2, length / 2, height);
-  glVertex3d(-width / 2, -length / 2, height);
-  glEnd();
-
-  //FRONT
-  glBegin(GL_POLYGON);
-  glColor3f(51.f / 255, 153.f / 255, 255.f / 255);
-  glVertex3d(width / 2, -length / 2, 0);
-  glVertex3d(width / 2, length / 2, 0);
-  glVertex3d(width / 2, length / 2, height);
-  glVertex3d(width / 2, -length / 2, height);
-  glEnd();
-}
-
-void draw_doors(double height, double width, double position) {
-  glBegin(GL_POLYGON);
-  glColor3d(1.0, 1.0, 255.0 / 255);
-  glVertex3d(-position / 2 + 1, -width / 2, 0);
-  glVertex3d(-position / 2 + 1, width / 2, 0);
-  glVertex3d(-position / 2 + 1, width / 2, height);
-  glVertex3d(-position / 2 + 1, -width / 2, height);
-  glEnd();
-}
 
 void set_viewport(int width, int height, cameraType cam) {
   const float ar = (float) width / (float) height;
@@ -749,15 +476,17 @@ void play() {
     // draw stuff
     glPushMatrix();
 
-    //ROBOT MOVEMENT
+    //ROBOT VELOCITY REGULATION
     u_ster_lw = PID_control(robot.left_wheel_velocity_ref,robot.left_wheel_velocity);
     u_ster_rw = PID_control(robot.right_wheel_velocity_ref,robot.right_wheel_velocity);
 
+    //ROBOT REAL VELOCITITES SIMULATION
     robot.left_wheel_velocity = object_respond(u_ster_lw);
     robot.right_wheel_velocity = object_respond(u_ster_rw);
 
     std::cout<<"left wheel velocity: "<<robot.left_wheel_velocity<<" right wheel velocity: "<<robot.right_wheel_velocity<<std::endl;
 
+    //ROBOT MOVEMENT
     robot_movement(clk, prev_time, room_width, room_length);
 
     //convert rotation for 0-360 degrees only

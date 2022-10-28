@@ -6,7 +6,9 @@ CONFIG += console c++17
 CONFIG -= app_bundle
 
 SOURCES += \
-        main.cpp
+        drawingfunctions.cpp \
+        main.cpp \
+        trafficcone.cpp
 
 INCLUDEPATH += "C:\Program Files\SFML-2.5.1\include"
 
@@ -20,6 +22,8 @@ CONFIG(debug, debug|release){
 LIBS += -lOpenGL32 -lglu32
 
 HEADERS += \
-    headers.h
+    drawingfunctions.h \
+    headers.h \
+    trafficcone.h
 
 

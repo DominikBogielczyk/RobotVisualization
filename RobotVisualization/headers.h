@@ -22,4 +22,6 @@
 
 #include <QtSerialPort>
 
+#define PI 3.14159265
+
 #endif // HEADERS_H
