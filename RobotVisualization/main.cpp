@@ -2,7 +2,7 @@
 #include "trafficcone.h"
 #include <drawingfunctions.h>
 
-#define port "COM3"
+#define port "COM7"
 
 enum cameraType {
     external = 0,
@@ -27,8 +27,8 @@ struct {
 
   float x = 400;
   float y = 0;
-  float prev_x = 400;
-  float prev_y = 0;
+  float prev_x = x;
+  float prev_y = y;
   float rot_z_0_360 = 0;
   float rot_z = 0;
 
@@ -57,9 +57,9 @@ struct {
   float Le = 0.97 * 0.001;
 
   //TRANFER FUNCTION PARAMETERES
-  float a0 = 0.00246;
-  float a1 = 0.1668;
-  float b0 = 7.794*pow(10,-17);
+  float a0 = 0.0246;
+  float a1 = 1.668;
+  float b0 = 0.0;
   float b1 = -0.7021;
   float b2 = 1;
 
@@ -74,7 +74,7 @@ struct {
 robot;
 
 struct{
-    float k = 0.57;
+    float k = 5.7;
     float T = 0.27;
     float tau = 0.3;
     float Kp = 1.2*T/(tau*k);
