@@ -10,9 +10,9 @@ enum cameraType {
 };
 
 struct {
-  float eye_x = 26;
-  float eye_y = 5;
-  float eye_z = 120;
+  float eye_x = 600;
+  float eye_y = 0;
+  float eye_z = 200;
   cameraType type = external;
 }
 camera;
@@ -25,7 +25,7 @@ struct {
   const double wheel_radius = height - from_ground;
   const double track_between_wheels = 10.0;
 
-  float x = 400;
+  float x = 450;
   float y = 0;
   float prev_x = x;
   float prev_y = y;
@@ -199,7 +199,7 @@ void set_viewport(int width, int height, cameraType cam) {
   if (cam == internal) {
     gluLookAt(robot.x, robot.y, 50, robot.x - width * cos(robot.rot_z * PI / 180), robot.y - width * sin(robot.rot_z * PI / 180), 10, 0, 0, 10);
   } else if (cam == external) {
-    gluLookAt(camera.eye_x, camera.eye_y, camera.eye_z, robot.x, robot.y, 0, 0, 0, 10);
+    gluLookAt(robot.x + 150, camera.eye_y, camera.eye_z, robot.x, 0, 0, 0, 0, 10);
   }
 }
 
@@ -452,8 +452,8 @@ void play() {
 
   std::vector < TrafficCone > trafficCones;
 
-  for (int i = 0; i <= 2; i++) {
-    trafficCones.push_back(TrafficCone(-i * 150 + 100, 0));
+  for (int i = 0; i < 5; i++) {
+    trafficCones.push_back(TrafficCone(300 - 150*i, 0));
   }
 
   while (running) {
@@ -477,12 +477,12 @@ void play() {
           robot.left_wheel_velocity_ref = -25.0;
         }
         if (event.key.code == sf::Keyboard::Right) {
-          robot.right_wheel_velocity_ref = -25.0;
-          robot.left_wheel_velocity_ref = 25.0;
-        }
-        if (event.key.code == sf::Keyboard::Left) {
           robot.right_wheel_velocity_ref = 25.0;
           robot.left_wheel_velocity_ref = -25.0;
+        }
+        if (event.key.code == sf::Keyboard::Left) {
+          robot.right_wheel_velocity_ref = -25.0;
+          robot.left_wheel_velocity_ref = 25.0;
         }
       }
 
