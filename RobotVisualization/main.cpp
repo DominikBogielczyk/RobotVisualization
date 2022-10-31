@@ -63,11 +63,17 @@ struct {
   float b1 = -0.7021;
   float b2 = 1;
 
-  //
-  float u_1 = 0;
-  float u_2 = 0;
-  float w_1 = 0;
-  float w_2 = (a1*u_1 - b1*w_1)/b2;
+  //LEFT WHEEL
+  float u1_left = 0; //u(n-1)
+  float u2_left = 0; //u(n-2)
+  float w1_left = 0; //ω(n-1)
+  float w2_left = (a1*u1_left - b1*w1_left)/b2; //ω(n-2)
+
+  //RIGHT WHEEL
+  float u1_right = 0;
+  float u2_right = 0;
+  float w1_right = 0;
+  float w2_right = (a1*u1_right - b1*w1_right)/b2;
 
 
 }
@@ -80,24 +86,44 @@ struct{
     float Kp = 1.2*T/(tau*k);
     float Ti = 2*tau;
     float Td = 0;
-    float pre_err = 0;
-    float pre_int = 0;
-    float dt =0.1;
+    float dt = 0.1;
+
+    //LEFT WHEEL
+    float pre_err_left = 0;
+    float pre_int_left = 0;
+    float u_left = 0;
+
+    //RIGHT WHEEL
+    float pre_err_right = 0;
+    float pre_int_right = 0;
+    float u_right = 0;
 }
-regulatorPID;
+PID;
 
-float PID_control(float sig_ref,float y){
-    float error = sig_ref - y;
+float PID_control(float y_ref,float y, std::string wheel){
 
-    float P = regulatorPID.Kp * error;
+    float error = y_ref - y;
+    float integral = 0;
+    float derivative = 0;
 
-    float integral = regulatorPID.pre_int + error * regulatorPID.dt;
-    regulatorPID.pre_int = integral;
-    float I = (regulatorPID.Kp/regulatorPID.Ti)*integral;
+    if(wheel == "left")
+    {
+        integral = PID.pre_int_left + error * PID.dt;
+        PID.pre_int_left = integral;
+        derivative = (error - PID.pre_err_left)/PID.dt;
+        PID.pre_err_left = error;
+    }
+    else if(wheel == "right")
+    {
+        integral = PID.pre_int_right + error * PID.dt;
+        PID.pre_int_right = integral;
+        derivative = (error - PID.pre_err_right)/PID.dt;
+        PID.pre_err_right = error;
+    }
 
-    float derivative = (error - regulatorPID.pre_err)/regulatorPID.dt;
-    regulatorPID.pre_err = error;
-    float D = regulatorPID.Kp * regulatorPID.Td * derivative;
+    float P = PID.Kp * error;
+    float I = (PID.Kp/PID.Ti)*integral;
+    float D = PID.Kp * PID.Td * derivative;
 
     float U = P + I + D;
 
@@ -110,15 +136,19 @@ float PID_control(float sig_ref,float y){
     }
 }
 
-float object_respond(float u_ster){
-     float y = (robot.a1*robot.u_1 + robot.a0*robot.u_2 - robot.b1*robot.w_1 - robot.b0 * robot.w_2)/robot.b2;
+void object_respond(float u_sterL, float u_sterP, float &yl, float &yp){
+     yl = (robot.a1*robot.u1_left + robot.a0*robot.u2_left - robot.b1*robot.w1_left - robot.b0 * robot.w2_left)/robot.b2;
+     yp = (robot.a1*robot.u1_right + robot.a0*robot.u2_right - robot.b1*robot.w1_right - robot.b0 * robot.w2_right)/robot.b2;
 
-     robot.w_2 = robot.w_1;
-     robot.w_1 = y;
-     robot.u_2 = robot.u_1;
-     robot.u_1 = u_ster;
+     robot.w2_left = robot.w1_left;
+     robot.w1_left = yl;
+     robot.u2_left = robot.u1_left;
+     robot.u1_left = u_sterL;
 
-     return y;
+     robot.w2_right = robot.w1_right;
+     robot.w1_right = yp;
+     robot.u2_right = robot.u1_right;
+     robot.u1_right = u_sterP;
 }
 
 bool traffic_cone_robot_collisions(TrafficCone trafficcone) {
@@ -242,8 +272,8 @@ void velocity_extraction(std::string text) {
 
     robot.prev_left_wheel_velocity = robot.left_wheel_velocity;
     robot.prev_right_wheel_velocity = robot.right_wheel_velocity;
-    robot.right_wheel_velocity_ref = std::stof(sm1[2]);
-    robot.left_wheel_velocity_ref = std::stof(sm2[2]);
+    robot.left_wheel_velocity_ref = std::stof(sm1[2]);
+    robot.right_wheel_velocity_ref = std::stof(sm2[2]);
 
   }
 }
@@ -417,9 +447,6 @@ void play() {
   std::string dataToCut;
   std::string control;
 
-  float u_ster_lw;
-  float u_ster_rw;
-
   QSerialPort * serial = new QSerialPort();
   running = connectBluetooth(serial);
 
@@ -442,20 +469,20 @@ void play() {
         }
         // keyboard robot control
         if (event.key.code == sf::Keyboard::Up) {
-          robot.right_wheel_velocity_ref = 10.0;
-          robot.left_wheel_velocity_ref = 10.0;
+          robot.right_wheel_velocity_ref = 25.0;
+          robot.left_wheel_velocity_ref = 25.0;
         }
         if (event.key.code == sf::Keyboard::Down) {
-          robot.right_wheel_velocity_ref = -10.0;
-          robot.left_wheel_velocity_ref = -10.0;
+          robot.right_wheel_velocity_ref = -25.0;
+          robot.left_wheel_velocity_ref = -25.0;
         }
         if (event.key.code == sf::Keyboard::Right) {
-          robot.right_wheel_velocity_ref = -10.0;
-          robot.left_wheel_velocity_ref = 10.0;
+          robot.right_wheel_velocity_ref = -25.0;
+          robot.left_wheel_velocity_ref = 25.0;
         }
         if (event.key.code == sf::Keyboard::Left) {
-          robot.right_wheel_velocity_ref = 10.0;
-          robot.left_wheel_velocity_ref = -10.0;
+          robot.right_wheel_velocity_ref = 25.0;
+          robot.left_wheel_velocity_ref = -25.0;
         }
       }
 
@@ -468,6 +495,15 @@ void play() {
 
     }
 
+
+    //ROBOT VELOCITY REGULATION
+    PID.u_left = PID_control(robot.left_wheel_velocity_ref,robot.left_wheel_velocity,"left");
+    PID.u_right = PID_control(robot.right_wheel_velocity_ref,robot.right_wheel_velocity,"right");
+
+
+    //ROBOT REAL VELOCITITES SIMULATION
+    object_respond(PID.u_left, PID.u_right, robot.left_wheel_velocity, robot.right_wheel_velocity);
+
     // clear the buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
@@ -476,25 +512,17 @@ void play() {
     // draw stuff
     glPushMatrix();
 
-    //ROBOT VELOCITY REGULATION
-    u_ster_lw = PID_control(robot.left_wheel_velocity_ref,robot.left_wheel_velocity);
-    u_ster_rw = PID_control(robot.right_wheel_velocity_ref,robot.right_wheel_velocity);
-
-    //ROBOT REAL VELOCITITES SIMULATION
-    robot.left_wheel_velocity = object_respond(u_ster_lw);
-    robot.right_wheel_velocity = object_respond(u_ster_rw);
-
     std::cout<<"left wheel velocity: "<<robot.left_wheel_velocity<<" right wheel velocity: "<<robot.right_wheel_velocity<<std::endl;
 
     //ROBOT MOVEMENT
     robot_movement(clk, prev_time, room_width, room_length);
 
     //convert rotation for 0-360 degrees only
-    if (robot.rot_z >= 0) {
-      robot.rot_z_0_360 = (int) robot.rot_z % 360;
-    } else {
-      robot.rot_z_0_360 = abs((int)(360 + robot.rot_z) % 360);
-    }
+   // if (robot.rot_z >= 0) {
+     // robot.rot_z_0_360 = (int) robot.rot_z % 360;
+    //} else {
+     // robot.rot_z_0_360 = abs((int)(360 + robot.rot_z) % 360);
+   // }
 
     //collisions case
     collisions();

@@ -154,21 +154,22 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onStopTrackingTouch(slider: Slider) {
-                if(modeButton.isChecked)
-                {
+                if (modeButton.isChecked) {
                     sendFromSlider()
                 }
 
             }
         })
         sliderBoth.addOnChangeListener { _, value, fromUser ->
+
             velocityLeft = sliderBoth.value
             velocityRight = sliderBoth.value
-            sliderLeft.value = sliderBoth.value
-            sliderRight.value = sliderBoth.value
-            sliderBothValue.text = velocityLeft.toString()
-            sliderLeftValue.text = velocityLeft.toString()
-            sliderRightValue.text = velocityRight.toString()
+
+            sliderLeft.value = velocityLeft
+            sliderRight.value = velocityRight
+            sliderBothValue.text = sliderBoth.value.toString()
+            sliderLeftValue.text = sliderLeft.value.toString()
+            sliderRightValue.text = sliderRight.value.toString()
         }
 
 
@@ -176,8 +177,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun sendFromSlider()
-    {
+    private fun sendFromSlider() {
         var text = "wp" + velocityRight.toString() + "wl" + velocityLeft.toString()
         var size = text.toByteArray().size.toString() + "B"
         sendCommand("$text;$cmdIndex;$size")
@@ -188,7 +188,12 @@ class MainActivity : AppCompatActivity() {
 
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun onTouch(event: MotionEvent?, command: String, sendStop: Boolean, image: ImageView): Boolean {
+    private fun onTouch(
+        event: MotionEvent?,
+        command: String,
+        sendStop: Boolean,
+        image: ImageView
+    ): Boolean {
         var text = " "
         var size = ""
 
