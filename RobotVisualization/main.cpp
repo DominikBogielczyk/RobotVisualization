@@ -2,7 +2,7 @@
 #include "trafficcone.h"
 #include <drawingfunctions.h>
 
-#define port "COM7"
+#define port "COM3"
 
 enum cameraType {
     external = 0,
@@ -25,8 +25,10 @@ struct {
   const double wheel_radius = height - from_ground;
   const double track_between_wheels = 10.0;
 
-  float x = 450;
-  float y = 0;
+  float start_x = 450;
+  float start_y = 0;
+  float x = start_x;
+  float y = start_y;
   float prev_x = x;
   float prev_y = y;
   float rot_z_0_360 = 0;
@@ -47,6 +49,7 @@ struct {
   bool collision_left = 0;
   bool collision = 0;
   bool last_collision = 0;
+  bool traffic_cones_collision = 0;
 
   //MOTORS PARAMETERS
   float Kt = 0.062;
@@ -363,6 +366,8 @@ void play() {
   sf::Clock plot_clock;
   int from_prev_plot = 0;
 
+  float collision_delay = 0;
+
   std::ofstream myfile;
   //CLEAR THE FILE
   myfile.open("robot_data.txt");
@@ -517,13 +522,6 @@ void play() {
     //ROBOT MOVEMENT
     robot_movement(clk, prev_time, room_width, room_length);
 
-    //convert rotation for 0-360 degrees only
-   // if (robot.rot_z >= 0) {
-     // robot.rot_z_0_360 = (int) robot.rot_z % 360;
-    //} else {
-     // robot.rot_z_0_360 = abs((int)(360 + robot.rot_z) % 360);
-   // }
-
     //collisions case
     collisions();
 
@@ -532,6 +530,7 @@ void play() {
         trafficCones[i].pos_x += (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * cos(robot.rot_z * PI / 180);
         trafficCones[i].pos_y += (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * sin(robot.rot_z * PI / 180);
         std::cout<<"Collision with traffic cone!"<<std::endl;
+        robot.traffic_cones_collision = 1;
       }
     }
 
@@ -555,14 +554,31 @@ void play() {
       robot.last_collision = 0;
     }
 
+    //RESTART POSISION AFTER COLLISION WITH TRAFFIC CONE
+
+    if(robot.traffic_cones_collision){
+        collision_delay += prev_time;
+        if(collision_delay>=2){
+            robot.traffic_cones_collision = 0;
+            collision_delay = 0;
+            robot.x = robot.start_x;
+            robot.y = robot.start_y;
+            robot.rot_z = 0;
+            for (size_t i = 0; i < trafficCones.size(); i++) {
+                trafficCones[i].pos_x = 300 - 150*static_cast<int>(i);
+                trafficCones[i].pos_y = 0;
+            }
+        }
+    }
+
     //camera movement
     cameraHandling(clk, prev_time, camera.type, false);
 
     set_viewport(window.getSize().x, window.getSize().y, camera.type);
 
-    draw_floor(room_width, room_length);
-    draw_walls(room_width, room_length, room_height);
-    draw_doors(doors_height, doors_width, doors_position);
+//    draw_floor(room_width, room_length);
+//    draw_walls(room_width, room_length, room_height);
+//    draw_doors(doors_height, doors_width, doors_position);
 
     //new data to plot every 100ms
     from_prev_plot += plot_clock.restart().asMilliseconds();
@@ -573,6 +589,11 @@ void play() {
       myfile.close();
       from_prev_plot = 0;
     }
+
+
+    draw_floor(room_width, room_length);
+    draw_walls(room_width, room_length, room_height);
+    draw_doors(doors_height, doors_width, doors_position);
 
     for (size_t i = 0; i < trafficCones.size(); i++) {
       trafficCones[i].draw_traffic_cone();
@@ -623,6 +644,7 @@ void play() {
     }
 
     prev_time = clk.restart().asSeconds();
+
   }
 
   //CLOSE SERIAL PORT AFTER CLOSING APPLICATION

@@ -172,7 +172,7 @@ void draw_walls(double width, double length, double height) {
 
 void draw_doors(double height, double width, double position) {
   glBegin(GL_POLYGON);
-  glColor3d(1.0, 1.0, 255.0 / 255);
+  glColor3d(110.0 / 255.0, 64.0 / 255.0, 48.0 / 255);
   glVertex3d(-position / 2 + 1, -width / 2, 0);
   glVertex3d(-position / 2 + 1, width / 2, 0);
   glVertex3d(-position / 2 + 1, width / 2, height);
