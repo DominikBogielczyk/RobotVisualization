@@ -282,6 +282,14 @@ void velocity_extraction(std::string text) {
 }
 
 void collisions() {
+    //convert rotation for 0-360 degrees only
+    if(robot.rot_z>=0){
+        robot.rot_z_0_360 = (int)robot.rot_z%360;
+        } else {
+            robot.rot_z_0_360 = abs((int)(360+robot.rot_z)%360);
+        }
+
+
   // check if robot ride away from wall if true there is no more collision if false there is still collision
   if (robot.collision_front == 1) {
     if (robot.linear_velocity > 0 && (robot.rot_z_0_360 < 90 || robot.rot_z_0_360 > 270)) {
@@ -360,6 +368,8 @@ void play() {
 
   // activate the window
   window.setActive(true);
+
+  window.setFramerateLimit(60);
 
   float prev_time = 0;
 
