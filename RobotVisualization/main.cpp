@@ -2,7 +2,7 @@
 #include "trafficcone.h"
 #include <drawingfunctions.h>
 
-#define port "COM3"
+#define port "COM7"
 
 enum cameraType {
     external = 0,
@@ -78,7 +78,12 @@ struct {
   float w1_right = 0;
   float w2_right = (a1*u1_right - b1*w1_right)/b2;
 
-
+  float wl_tab[100];
+  float wp_tab[100];
+  float w_tab[100];
+  float v_tab[100];
+  float x_tab[100];
+  float y_tab[100];
 }
 robot;
 
@@ -364,15 +369,13 @@ void play() {
   float prev_time = 0;
 
   sf::Clock plot_clock;
+  sf::Clock update_clock;
   int from_prev_plot = 0;
+  int from_prev_update = 0;
 
   float collision_delay = 0;
 
   std::ofstream myfile;
-  //CLEAR THE FILE
-  myfile.open("robot_data.txt");
-  myfile << "x;y;v,ω;ωL;ωP\n";
-  myfile.close();
 
   //1200cm x 800cm x 250cm
   const double room_width = 1200.0;
@@ -517,7 +520,7 @@ void play() {
     // draw stuff
     glPushMatrix();
 
-    std::cout<<"left wheel velocity: "<<robot.left_wheel_velocity<<" right wheel velocity: "<<robot.right_wheel_velocity<<std::endl;
+    //std::cout<<"left wheel velocity: "<<robot.left_wheel_velocity<<" right wheel velocity: "<<robot.right_wheel_velocity<<std::endl;
 
     //ROBOT MOVEMENT
     robot_movement(clk, prev_time, room_width, room_length);
@@ -580,16 +583,43 @@ void play() {
 //    draw_walls(room_width, room_length, room_height);
 //    draw_doors(doors_height, doors_width, doors_position);
 
-    //new data to plot every 100ms
+    //data table update every 100ms
     from_prev_plot += plot_clock.restart().asMilliseconds();
-    if (from_prev_plot >= 100) {
-      myfile.open("robot_data.txt", std::ios::app);
-      myfile << robot.x << ";" << robot.y << ";" << robot.linear_velocity << ";" << robot.angular_velocity << ";" <<
-        robot.left_wheel_velocity << ";" << robot.right_wheel_velocity << "\n";
-      myfile.close();
-      from_prev_plot = 0;
-    }
+    from_prev_update += update_clock.restart().asMilliseconds();
+    if (from_prev_update >= 100) {
 
+        for(size_t i=0; i<100-1; i++)
+        {
+            robot.x_tab[i] = robot.x_tab[i+1];
+            robot.y_tab[i] = robot.y_tab[i+1];
+            robot.v_tab[i] = robot.v_tab[i+1];
+            robot.w_tab[i] = robot.w_tab[i+1];
+            robot.wl_tab[i] = robot.wl_tab[i+1];
+            robot.wp_tab[i] = robot.wp_tab[i+1];
+        }
+        robot.x_tab[99] = robot.x;
+        robot.y_tab[99] = robot.y;
+        robot.v_tab[99] = robot.linear_velocity;
+        robot.w_tab[99] = robot.angular_velocity;
+        robot.wl_tab[99] = robot.left_wheel_velocity;
+        robot.wp_tab[99] = robot.right_wheel_velocity;
+
+        from_prev_update = 0;
+    }
+    //new data to plot every 1000ms
+    if(from_prev_plot >= 1000)
+    {
+        myfile.open("robot_data.txt", std::ios::out);
+        myfile << "x;y;v,ω;ωL;ωP\n";
+        for(size_t i=0; i<100; i++)
+        {
+          myfile << robot.x_tab[i] << ";" << robot.y_tab[i] << ";" << robot.v_tab[i] << ";" << robot.w_tab[i] << ";" << robot.wl_tab[i] << ";" << robot.wp_tab[i] << "\n";
+        }
+        myfile.close();
+
+        from_prev_plot = 0;
+
+    }
 
     draw_floor(room_width, room_length);
     draw_walls(room_width, room_length, room_height);
