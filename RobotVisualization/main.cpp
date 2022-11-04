@@ -1,6 +1,6 @@
 #include "headers.h"
 #include "trafficcone.h"
-#include <drawingfunctions.h>
+#include "drawingfunctions.h"
 
 #define port "COM3"
 
@@ -361,6 +361,17 @@ void robot_movement(sf::Clock clk, float prev_time, double room_width, double ro
   }
 }
 
+//void Screendump(char *tga_file, short W, short H) {
+// FILE   *out = fopen(tga_file, "w");
+// char   pixel_data[3*W*H];
+// short  TGAhead[] = {0, 2, 0, 0, 0, 0, W, H, 24};
+
+// glReadBuffer(GL_FRONT);
+// glReadPixels(0, 0, W, H, GL_BGR, GL_UNSIGNED_BYTE, pixel_data);
+// fwrite(&TGAhead, sizeof(TGAhead), 1, out);
+// fwrite(pixel_data, 3*W*H, 1, out);
+// fclose(out); }
+
 void play() {
   // create the window
   sf::Window window(sf::VideoMode(1500, 768), "Robot Visualization", sf::Style::Default, sf::ContextSettings(32));
@@ -471,13 +482,15 @@ void play() {
     trafficCones.push_back(TrafficCone(300 - 150*i, 0));
   }
 
+  uint8_t *pixels =new uint8_t[3*window.getSize().x*window.getSize().y];
+
   while (running) {
     sf::Event event;
     while (window.pollEvent(event)) {
       if (event.type == sf::Event::Closed) {
         running = false;
         printf("\n");
-      }
+      }      
       if (event.type == sf::Event::KeyPressed) {
         if (event.key.code == sf::Keyboard::C) {
           cameraHandling(clk, prev_time, camera.type, true);
@@ -509,8 +522,6 @@ void play() {
       }
 
     }
-
-
     //ROBOT VELOCITY REGULATION
     PID.u_left = PID_control(robot.left_wheel_velocity_ref,robot.left_wheel_velocity,"left");
     PID.u_right = PID_control(robot.right_wheel_velocity_ref,robot.right_wheel_velocity,"right");
@@ -586,10 +597,6 @@ void play() {
 
     set_viewport(window.getSize().x, window.getSize().y, camera.type);
 
-//    draw_floor(room_width, room_length);
-//    draw_walls(room_width, room_length, room_height);
-//    draw_doors(doors_height, doors_width, doors_position);
-
     //new data to plot every 100ms
     from_prev_plot += plot_clock.restart().asMilliseconds();
     if (from_prev_plot >= 100) {
@@ -621,6 +628,12 @@ void play() {
 
     window.display();
 
+    glReadPixels(0,0,window.getSize().x,window.getSize().y,GL_RGB,GL_UNSIGNED_BYTE,pixels);
+
+    std::cout<<int(pixels[0])<<" "<<int(pixels[1])<<std::endl;
+
+
+
     //READ DATA FROM CONNECTED BLUETOOTH DEVICE
     readData = serial -> readAll();
     serial -> waitForReadyRead(10);
@@ -641,6 +654,7 @@ void play() {
         dataToCut.erase(0, posOfsep + separation_sign.length());
       }
 
+
       //SEND RESPOND THAT DATA CAME SUCCESFULLY
       output = QString::fromStdString(data[1]).toUtf8();
       serial -> write(output);
@@ -654,12 +668,10 @@ void play() {
     }
 
     prev_time = clk.restart().asSeconds();
-
   }
 
   //CLOSE SERIAL PORT AFTER CLOSING APPLICATION
   serial -> close();
-
 }
 
 int main() {
