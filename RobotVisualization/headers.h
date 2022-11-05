@@ -16,6 +16,7 @@
 
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
+#include <SFML/Audio.hpp>
 
 #include <GL/glu.h>
 

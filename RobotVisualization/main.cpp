@@ -511,6 +511,18 @@ void play(int number_of_traffic_cones,QString serialport) {
     trafficCones.push_back(TrafficCone(300 - 150*i, 0));
   }
 
+  //ADD SOUND EFFECT
+
+  sf::SoundBuffer buffer;
+  sf::Sound sound;
+  bool sound_played = 0;
+  if(!buffer.loadFromFile("collision_sound.wav")){
+      std::cout<<"Sound can't be load!"<<std::endl;
+  } else {
+      sound.setBuffer(buffer);
+  }
+
+
 //  uint8_t *pixels =new uint8_t[3*window.getSize().x*window.getSize().y];
 
   while (running) {
@@ -607,8 +619,13 @@ void play(int number_of_traffic_cones,QString serialport) {
     //RESTART POSISION AFTER COLLISION WITH TRAFFIC CONE
 
     if(robot.traffic_cones_collision){
+        if(!sound_played){
+        sound.play();
+        sound_played = 1;
+        }
         collision_delay += prev_time;
-        if(collision_delay>=2){
+        if(collision_delay>=1){
+            sound_played = 0;
             robot.traffic_cones_collision = 0;
             collision_delay = 0;
             robot.x = robot.start_x;
@@ -657,9 +674,9 @@ void play(int number_of_traffic_cones,QString serialport) {
         for(size_t i=0; i<100; i++)
         {
           myfile << robot.x_tab[i] << ";" << robot.y_tab[i] << ";" << robot.v_tab[i] << ";" << robot.w_tab[i] << ";" << robot.wl_tab[i] << ";" << robot.wp_tab[i] << "\n";
+          std::cout<< robot.x_tab[i] << ";" << robot.y_tab[i] << ";" << robot.v_tab[i] << ";" << robot.w_tab[i] << ";" << robot.wl_tab[i] << ";" << robot.wp_tab[i] <<std::endl;
         }
         myfile.close();
-
         from_prev_plot = 0;
 
     }
