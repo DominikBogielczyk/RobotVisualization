@@ -2,7 +2,33 @@
 #include "trafficcone.h"
 #include "drawingfunctions.h"
 
-#define port "COM7"
+QT_BEGIN_NAMESPACE
+
+class QLabel;
+class QLineEdit;
+class QSpinBox;
+class QPushButton;
+class QComboBox;
+
+QT_END_NAMESPACE
+
+class Menu : public QDialog
+{
+public:
+    explicit Menu(QWidget *parent = nullptr);
+
+private slots:
+    void StartSimulation();
+
+private:
+    QLabel *m_serialPortLabel = nullptr;
+    QComboBox *m_serialPortComboBox = nullptr;
+    QLabel *m_TrafficConesLabel = nullptr;
+    QSpinBox *m_TrafficConesSpinBox = nullptr;
+    QPushButton *m_startButton = nullptr;
+};
+
+
 
 enum cameraType {
     external = 0,
@@ -248,10 +274,10 @@ void cameraHandling(sf::Clock & clk, float prev_time, cameraType & type, bool ch
   }
 }
 
-bool connectBluetooth(QSerialPort * serial) {
+bool connectBluetooth(QSerialPort * serial,QString serialport) {
   // set bluetooth connection by serial port
   bool ok;
-  serial -> setPortName(port);
+  serial -> setPortName(serialport);
   serial -> setBaudRate(QSerialPort::Baud9600);
   serial -> setDataBits(QSerialPort::Data8);
   serial -> setParity(QSerialPort::NoParity);
@@ -377,7 +403,7 @@ void robot_movement(sf::Clock clk, float prev_time, double room_width, double ro
 // fwrite(pixel_data, 3*W*H, 1, out);
 // fclose(out); }
 
-void play() {
+void play(int number_of_traffic_cones,QString serialport) {
   // create the window
   sf::Window window(sf::VideoMode(1500, 768), "Robot Visualization", sf::Style::Default, sf::ContextSettings(32));
   window.setVerticalSyncEnabled(true); //limit the number of frames
@@ -477,15 +503,15 @@ void play() {
   std::string control;
 
   QSerialPort * serial = new QSerialPort();
-  running = connectBluetooth(serial);
+  running = connectBluetooth(serial,serialport);
 
   std::vector < TrafficCone > trafficCones;
 
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < number_of_traffic_cones; i++) {
     trafficCones.push_back(TrafficCone(300 - 150*i, 0));
   }
 
-  uint8_t *pixels =new uint8_t[3*window.getSize().x*window.getSize().y];
+//  uint8_t *pixels =new uint8_t[3*window.getSize().x*window.getSize().y];
 
   while (running) {
     sf::Event event;
@@ -658,9 +684,9 @@ void play() {
 
     window.display();
 
-    glReadPixels(0,0,window.getSize().x,window.getSize().y,GL_RGB,GL_UNSIGNED_BYTE,pixels);
+//    glReadPixels(0,0,window.getSize().x,window.getSize().y,GL_RGB,GL_UNSIGNED_BYTE,pixels);
 
-    std::cout<<int(pixels[0])<<" "<<int(pixels[1])<<std::endl;
+//    std::cout<<int(pixels[0])<<" "<<int(pixels[1])<<std::endl;
 
 
 
@@ -704,7 +730,45 @@ void play() {
   serial -> close();
 }
 
-int main() {
-  play();
-  return 0;
+int main(int argc, char** argv) {
+    QApplication app(argc, argv);
+    Menu menu;
+    menu.show();
+    return app.exec();
+}
+
+Menu::Menu(QWidget *parent):
+    QDialog(parent),
+    m_serialPortLabel(new QLabel(tr("Serial port:"))),
+    m_serialPortComboBox(new QComboBox),
+    m_TrafficConesLabel(new QLabel(tr("How many traffic cones:"))),
+    m_TrafficConesSpinBox(new QSpinBox),
+    m_startButton(new QPushButton(tr("Start")))
+{
+    const auto infos = QSerialPortInfo::availablePorts();
+    for (const QSerialPortInfo &info : infos)
+        m_serialPortComboBox->addItem(info.portName());
+
+    m_TrafficConesSpinBox->setRange(0,5);
+    m_TrafficConesSpinBox->setValue(0);
+
+    auto mainLayout = new QGridLayout;
+    mainLayout->addWidget(m_serialPortLabel, 0, 0);
+    mainLayout->addWidget(m_serialPortComboBox, 0, 1);
+    mainLayout->addWidget(m_TrafficConesLabel, 1, 0);
+    mainLayout->addWidget(m_TrafficConesSpinBox, 1, 1);
+    mainLayout->addWidget(m_startButton, 0, 2, 2, 1);
+    setLayout(mainLayout);
+
+    setWindowTitle(tr("Robot Visualization"));
+    m_serialPortComboBox->setFocus();
+
+    connect(m_startButton, &QPushButton::clicked, this, &Menu::StartSimulation);
+}
+
+void Menu::StartSimulation(){
+    robot.x = robot.start_x;
+    robot.y = robot.start_y;
+    robot.rot_z = 0;
+    play(m_TrafficConesSpinBox->value(),m_serialPortComboBox->currentText());
 }

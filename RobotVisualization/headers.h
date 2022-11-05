@@ -11,7 +11,6 @@
 #include <sys/time.h>
 #include <string>
 #include <regex>
-#include <QRegularExpression>
 #include <vector>
 
 
@@ -20,7 +19,16 @@
 
 #include <GL/glu.h>
 
+#include <QApplication>
 #include <QtSerialPort>
+#include <QComboBox>
+#include <QGridLayout>
+#include <QLabel>
+#include <QPushButton>
+#include <QSerialPortInfo>
+#include <QSpinBox>
+#include <QDialog>
+
 
 #define PI 3.14159265
 
