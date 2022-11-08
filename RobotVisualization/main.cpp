@@ -28,6 +28,8 @@ private:
     QLabel *m_TrafficConesLabel = nullptr;
     QSpinBox *m_TrafficConesSpinBox = nullptr;
     QPushButton *m_startButton = nullptr;
+    QLabel *m_ModeLabel = nullptr;
+    QComboBox *m_ModeComboBox = nullptr;
 };
 
 
@@ -364,7 +366,7 @@ bool finish_point_reach(Room room, double rob_x_pos, double rob_y_pos, double ro
     }
 }
 
-void play(int number_of_traffic_cones,QString serialport) {
+void play(int number_of_traffic_cones,QString serialport,QString mode) {
   // create the window
   sf::Window window(sf::VideoMode(1500, 768), "Robot Visualization", sf::Style::Default, sf::ContextSettings(32));
   window.setVerticalSyncEnabled(true); //limit the number of frames
@@ -634,7 +636,9 @@ void play(int number_of_traffic_cones,QString serialport) {
     room.draw_floor();
     room.draw_walls();
     room.draw_doors();
+    if(mode=="Count time mode"){
     room.draw_finish_point();
+    }
 
     for (size_t i = 0; i < trafficCones.size(); i++) {
       trafficCones[i].draw_traffic_cone();
@@ -685,6 +689,7 @@ void play(int number_of_traffic_cones,QString serialport) {
 
     prev_time = clk.restart().asSeconds();
 
+    if(mode=="Count time mode"){
     //COUNT RIDE TIME IF ROBOT START MOVING AND STOP COUNTING IF ROBOT REACH DESTINATION
     if(robot.left_wheel_velocity_ref != 0 || robot.right_wheel_velocity_ref != 0){
         count_time = true;
@@ -700,6 +705,7 @@ void play(int number_of_traffic_cones,QString serialport) {
         count_time = false;
         ride_time = 0.0;
         reset_robot_position();
+    }
     }
 
   }
@@ -721,11 +727,16 @@ Menu::Menu(QWidget *parent):
     m_serialPortComboBox(new QComboBox),
     m_TrafficConesLabel(new QLabel(tr("How many traffic cones:"))),
     m_TrafficConesSpinBox(new QSpinBox),
-    m_startButton(new QPushButton(tr("Start")))
+    m_startButton(new QPushButton(tr("Start"))),
+    m_ModeLabel(new QLabel(tr("Mode:"))),
+    m_ModeComboBox(new QComboBox)
 {
     const auto infos = QSerialPortInfo::availablePorts();
     for (const QSerialPortInfo &info : infos)
         m_serialPortComboBox->addItem(info.portName());
+
+    m_ModeComboBox->addItem("Free mode");
+    m_ModeComboBox->addItem("Count time mode");
 
     m_TrafficConesSpinBox->setRange(0,5);
     m_TrafficConesSpinBox->setValue(0);
@@ -736,6 +747,8 @@ Menu::Menu(QWidget *parent):
     mainLayout->addWidget(m_TrafficConesLabel, 1, 0);
     mainLayout->addWidget(m_TrafficConesSpinBox, 1, 1);
     mainLayout->addWidget(m_startButton, 0, 2, 2, 1);
+    mainLayout->addWidget(m_ModeLabel,2,0);
+    mainLayout->addWidget(m_ModeComboBox,2,1);
     setLayout(mainLayout);
 
     setWindowTitle(tr("Robot Visualization"));
@@ -748,5 +761,5 @@ void Menu::StartSimulation(){
     robot.x = robot.start_x;
     robot.y = robot.start_y;
     robot.rot_z = 0;
-    play(m_TrafficConesSpinBox->value(),m_serialPortComboBox->currentText());
+    play(m_TrafficConesSpinBox->value(),m_serialPortComboBox->currentText(),m_ModeComboBox->currentText());
 }
