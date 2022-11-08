@@ -13,7 +13,6 @@
 #include <regex>
 #include <vector>
 
-
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>
 #include <SFML/Audio.hpp>
@@ -29,7 +28,6 @@
 #include <QSerialPortInfo>
 #include <QSpinBox>
 #include <QDialog>
-
 
 #define PI 3.14159265
 

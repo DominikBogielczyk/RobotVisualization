@@ -8,6 +8,8 @@ CONFIG -= app_bundle
 SOURCES += \
         drawingfunctions.cpp \
         main.cpp \
+        pid_controller.cpp \
+        room.cpp \
         trafficcone.cpp
 
 INCLUDEPATH += "C:\Program Files\SFML-2.5.1\include"
@@ -24,6 +26,8 @@ LIBS += -lOpenGL32 -lglu32
 HEADERS += \
     drawingfunctions.h \
     headers.h \
+    pid_controller.h \
+    room.h \
     trafficcone.h
 
 

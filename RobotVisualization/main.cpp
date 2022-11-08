@@ -1,6 +1,8 @@
 #include "headers.h"
 #include "trafficcone.h"
 #include "drawingfunctions.h"
+#include "room.h"
+#include "pid_controller.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -93,12 +95,14 @@ struct {
   float b2 = 1;
 
   //LEFT WHEEL
+  float u_left = 0;
   float u1_left = 0; //u(n-1)
   float u2_left = 0; //u(n-2)
   float w1_left = 0; //ω(n-1)
   float w2_left = (a1*u1_left - b1*w1_left)/b2; //ω(n-2)
 
   //RIGHT WHEEL
+  float u_right = 0;
   float u1_right = 0;
   float u2_right = 0;
   float w1_right = 0;
@@ -112,63 +116,6 @@ struct {
   float y_tab[100];
 }
 robot;
-
-struct{
-    float k = 5.7;
-    float T = 0.27;
-    float tau = 0.3;
-    float Kp = 1.2*T/(tau*k);
-    float Ti = 2*tau;
-    float Td = 0;
-    float dt = 0.1;
-
-    //LEFT WHEEL
-    float pre_err_left = 0;
-    float pre_int_left = 0;
-    float u_left = 0;
-
-    //RIGHT WHEEL
-    float pre_err_right = 0;
-    float pre_int_right = 0;
-    float u_right = 0;
-}
-PID;
-
-float PID_control(float y_ref,float y, std::string wheel){
-
-    float error = y_ref - y;
-    float integral = 0;
-    float derivative = 0;
-
-    if(wheel == "left")
-    {
-        integral = PID.pre_int_left + error * PID.dt;
-        PID.pre_int_left = integral;
-        derivative = (error - PID.pre_err_left)/PID.dt;
-        PID.pre_err_left = error;
-    }
-    else if(wheel == "right")
-    {
-        integral = PID.pre_int_right + error * PID.dt;
-        PID.pre_int_right = integral;
-        derivative = (error - PID.pre_err_right)/PID.dt;
-        PID.pre_err_right = error;
-    }
-
-    float P = PID.Kp * error;
-    float I = (PID.Kp/PID.Ti)*integral;
-    float D = PID.Kp * PID.Td * derivative;
-
-    float U = P + I + D;
-
-    if(U>=24){
-        return 24.0;
-    } else if(U<=-24.0){
-        return -24.0;
-    } else {
-        return U;
-    }
-}
 
 void object_respond(float u_sterL, float u_sterP, float &yl, float &yp){
      yl = (robot.a1*robot.u1_left + robot.a0*robot.u2_left - robot.b1*robot.w1_left - robot.b0 * robot.w2_left)/robot.b2;
@@ -217,9 +164,26 @@ void draw_robot() {
   draw_circle(0, from_ground, robot.radius, 2.0, 90.0, 'g', -robot.radius); //(int x, int y, double radius, double width)
   //TOP
   draw_circle(0, 2 * wheel_radius + 1, robot.radius, 2.0, 0.0, 'g', -robot.radius);
+  glPopMatrix();
 
 }
 
+//FUNCTION WHICH RESET ROBOT POSITION AND VELOCITIES
+void reset_robot_position(){
+    robot.x = robot.start_x;
+    robot.y = robot.start_y;
+    robot.rot_z = 0;
+    robot.prev_x = robot.x;
+    robot.prev_y = robot.y;
+    robot.left_wheel_velocity = 0.0;
+    robot.right_wheel_velocity = 0.0;
+    robot.prev_left_wheel_velocity = 0.0;
+    robot.prev_right_wheel_velocity = 0.0;
+    robot.left_wheel_velocity_ref = 0.0;
+    robot.right_wheel_velocity_ref = 0.0;
+    robot.u_left = 0;
+    robot.u_right = 0;
+}
 
 void set_viewport(int width, int height, cameraType cam) {
   const float ar = (float) width / (float) height;
@@ -392,16 +356,13 @@ void robot_movement(sf::Clock clk, float prev_time, double room_width, double ro
   }
 }
 
-//void Screendump(char *tga_file, short W, short H) {
-// FILE   *out = fopen(tga_file, "w");
-// char   pixel_data[3*W*H];
-// short  TGAhead[] = {0, 2, 0, 0, 0, 0, W, H, 24};
-
-// glReadBuffer(GL_FRONT);
-// glReadPixels(0, 0, W, H, GL_BGR, GL_UNSIGNED_BYTE, pixel_data);
-// fwrite(&TGAhead, sizeof(TGAhead), 1, out);
-// fwrite(pixel_data, 3*W*H, 1, out);
-// fclose(out); }
+bool finish_point_reach(Room room, double rob_x_pos, double rob_y_pos, double rob_radius){
+    if (sqrt(pow(rob_x_pos - room.fp_x_position, 2) + pow(rob_y_pos - room.fp_y_position, 2)) <= rob_radius + room.fp_radius) {
+      return true;
+    } else {
+      return false;
+    }
+}
 
 void play(int number_of_traffic_cones,QString serialport) {
   // create the window
@@ -424,14 +385,10 @@ void play(int number_of_traffic_cones,QString serialport) {
 
   std::ofstream myfile;
 
-  //1200cm x 800cm x 250cm
-  const double room_width = 1200.0;
-  const double room_length = 800.0;
-  const double room_height = 250.0;
+  Room room;
 
-  const double doors_height = 200.0;
-  const double doors_width = 100.0;
-  const double doors_position = 1200.0;
+  PID_controller pid_controller;
+
 
   glClearColor(0, 0, 0, 1);
 
@@ -487,9 +444,6 @@ void play(int number_of_traffic_cones,QString serialport) {
 
   // load resources, initialize the OpenGL states, ...
 
-  // run the main loop
-  bool running = true;
-
   sf::Clock clk;
 
   std::string input;
@@ -503,7 +457,8 @@ void play(int number_of_traffic_cones,QString serialport) {
   std::string control;
 
   QSerialPort * serial = new QSerialPort();
-  running = connectBluetooth(serial,serialport);
+  // run the main loop
+  bool running = connectBluetooth(serial,serialport);
 
   std::vector < TrafficCone > trafficCones;
 
@@ -522,8 +477,11 @@ void play(int number_of_traffic_cones,QString serialport) {
       sound.setBuffer(buffer);
   }
 
-
-//  uint8_t *pixels =new uint8_t[3*window.getSize().x*window.getSize().y];
+  //VARIABLES USED TO RIDE TIME COUNTING
+//  bool count_time = false;
+  bool is_finish_point = false;
+  bool count_time = 0;
+  float ride_time = 0;
 
   while (running) {
     sf::Event event;
@@ -564,12 +522,11 @@ void play(int number_of_traffic_cones,QString serialport) {
 
     }
     //ROBOT VELOCITY REGULATION
-    PID.u_left = PID_control(robot.left_wheel_velocity_ref,robot.left_wheel_velocity,"left");
-    PID.u_right = PID_control(robot.right_wheel_velocity_ref,robot.right_wheel_velocity,"right");
-
+    robot.u_left = pid_controller.PID_control(robot.left_wheel_velocity_ref,robot.left_wheel_velocity,"left");
+    robot.u_right = pid_controller.PID_control(robot.right_wheel_velocity_ref,robot.right_wheel_velocity,"right");
 
     //ROBOT REAL VELOCITITES SIMULATION
-    object_respond(PID.u_left, PID.u_right, robot.left_wheel_velocity, robot.right_wheel_velocity);
+    object_respond(robot.u_left, robot.u_right, robot.left_wheel_velocity, robot.right_wheel_velocity);
 
     // clear the buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -579,10 +536,8 @@ void play(int number_of_traffic_cones,QString serialport) {
     // draw stuff
     glPushMatrix();
 
-    //std::cout<<"left wheel velocity: "<<robot.left_wheel_velocity<<" right wheel velocity: "<<robot.right_wheel_velocity<<std::endl;
-
     //ROBOT MOVEMENT
-    robot_movement(clk, prev_time, room_width, room_length);
+    robot_movement(clk, prev_time, room.room_width, room.room_length);
 
     //collisions case
     collisions();
@@ -591,13 +546,13 @@ void play(int number_of_traffic_cones,QString serialport) {
       if (traffic_cone_robot_collisions(trafficCones[i])) {
         trafficCones[i].pos_x += (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * cos(robot.rot_z * PI / 180);
         trafficCones[i].pos_y += (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * sin(robot.rot_z * PI / 180);
-        std::cout<<"Collision with traffic cone!"<<std::endl;
         robot.traffic_cones_collision = 1;
+        ride_time = 0;
+        count_time = false;
       }
     }
 
     //send message if is collision or not
-
     if (robot.collision_front || robot.collision_rear || robot.collision_right || robot.collision_left) {
       robot.collision = 1;
     } else {
@@ -607,12 +562,10 @@ void play(int number_of_traffic_cones,QString serialport) {
     if (robot.collision == 1 && robot.last_collision == 0) {
       output = "collision";
       serial -> write(output);
-      std::cout << output.toStdString() << std::endl;
       robot.last_collision = 1;
     } else if (robot.collision == 0 && robot.last_collision == 1) {
       output = "ok";
       serial -> write(output);
-      std::cout << output.toStdString() << std::endl;
       robot.last_collision = 0;
     }
 
@@ -628,9 +581,7 @@ void play(int number_of_traffic_cones,QString serialport) {
             sound_played = 0;
             robot.traffic_cones_collision = 0;
             collision_delay = 0;
-            robot.x = robot.start_x;
-            robot.y = robot.start_y;
-            robot.rot_z = 0;
+            reset_robot_position();
             for (size_t i = 0; i < trafficCones.size(); i++) {
                 trafficCones[i].pos_x = 300 - 150*static_cast<int>(i);
                 trafficCones[i].pos_y = 0;
@@ -642,7 +593,6 @@ void play(int number_of_traffic_cones,QString serialport) {
     cameraHandling(clk, prev_time, camera.type, false);
 
     set_viewport(window.getSize().x, window.getSize().y, camera.type);
-
 
     from_prev_plot += plot_clock.restart().asMilliseconds();
     from_prev_update += update_clock.restart().asMilliseconds();
@@ -674,16 +624,17 @@ void play(int number_of_traffic_cones,QString serialport) {
         for(size_t i=0; i<100; i++)
         {
           myfile << robot.x_tab[i] << ";" << robot.y_tab[i] << ";" << robot.v_tab[i] << ";" << robot.w_tab[i] << ";" << robot.wl_tab[i] << ";" << robot.wp_tab[i] << "\n";
-          std::cout<< robot.x_tab[i] << ";" << robot.y_tab[i] << ";" << robot.v_tab[i] << ";" << robot.w_tab[i] << ";" << robot.wl_tab[i] << ";" << robot.wp_tab[i] <<std::endl;
         }
         myfile.close();
         from_prev_plot = 0;
 
     }
 
-    draw_floor(room_width, room_length);
-    draw_walls(room_width, room_length, room_height);
-    draw_doors(doors_height, doors_width, doors_position);
+    //DRAW ELEMENTS OF ROOM
+    room.draw_floor();
+    room.draw_walls();
+    room.draw_doors();
+    room.draw_finish_point();
 
     for (size_t i = 0; i < trafficCones.size(); i++) {
       trafficCones[i].draw_traffic_cone();
@@ -700,12 +651,6 @@ void play(int number_of_traffic_cones,QString serialport) {
     glPopMatrix();
 
     window.display();
-
-//    glReadPixels(0,0,window.getSize().x,window.getSize().y,GL_RGB,GL_UNSIGNED_BYTE,pixels);
-
-//    std::cout<<int(pixels[0])<<" "<<int(pixels[1])<<std::endl;
-
-
 
     //READ DATA FROM CONNECTED BLUETOOTH DEVICE
     readData = serial -> readAll();
@@ -727,7 +672,6 @@ void play(int number_of_traffic_cones,QString serialport) {
         dataToCut.erase(0, posOfsep + separation_sign.length());
       }
 
-
       //SEND RESPOND THAT DATA CAME SUCCESFULLY
       output = QString::fromStdString(data[1]).toUtf8();
       serial -> write(output);
@@ -737,10 +681,27 @@ void play(int number_of_traffic_cones,QString serialport) {
       velocity_extraction(control);
 
       data.clear();
-
     }
 
     prev_time = clk.restart().asSeconds();
+
+    //COUNT RIDE TIME IF ROBOT START MOVING AND STOP COUNTING IF ROBOT REACH DESTINATION
+    if(robot.left_wheel_velocity_ref != 0 || robot.right_wheel_velocity_ref != 0){
+        count_time = true;
+    }
+
+    if(count_time){
+        ride_time += prev_time;
+        is_finish_point = finish_point_reach(room,robot.x,robot.y,robot.radius);
+    }
+    if(is_finish_point){
+        std::cout<<"Ride time: "<<ride_time<<std::endl;
+        is_finish_point = false;
+        count_time = false;
+        ride_time = 0.0;
+        reset_robot_position();
+    }
+
   }
 
   //CLOSE SERIAL PORT AFTER CLOSING APPLICATION
