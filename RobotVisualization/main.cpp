@@ -3,6 +3,7 @@
 #include "drawingfunctions.h"
 #include "room.h"
 #include "pid_controller.h"
+#include "robot.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -47,147 +48,7 @@ struct {
 }
 camera;
 
-struct {
-  const double height = 12.0;
-  const double radius = 20.0;
-  const double from_ground = 3.0;
-  const double wheel_width = 1.0;
-  const double wheel_radius = height - from_ground;
-  const double track_between_wheels = 10.0;
-
-  float start_x = 450;
-  float start_y = 0;
-  float x = start_x;
-  float y = start_y;
-  float prev_x = x;
-  float prev_y = y;
-  float rot_z_0_360 = 0;
-  float rot_z = 0;
-
-  float left_wheel_velocity = 0.0;
-  float right_wheel_velocity = 0.0;
-  float prev_left_wheel_velocity = 0.0;
-  float prev_right_wheel_velocity = 0.0;
-  float left_wheel_velocity_ref = 0.0;
-  float right_wheel_velocity_ref = 0.0;
-
-  float angular_velocity = 0.0;
-  float linear_velocity = 0.0;
-  bool collision_front = 0;
-  bool collision_rear = 0;
-  bool collision_right = 0;
-  bool collision_left = 0;
-  bool collision = 0;
-  bool last_collision = 0;
-  bool traffic_cones_collision = 0;
-
-  //MOTORS PARAMETERS
-  float Kt = 0.062;
-  float Kb = 0.062;
-  float J = 0.0551;
-  float B =0.188;
-  float Re = 0.56;
-  float Le = 0.97 * 0.001;
-
-  //TRANFER FUNCTION PARAMETERES
-  float a0 = 0.0246;
-  float a1 = 1.668;
-  float b0 = 0.0;
-  float b1 = -0.7021;
-  float b2 = 1;
-
-  //LEFT WHEEL
-  float u_left = 0;
-  float u1_left = 0; //u(n-1)
-  float u2_left = 0; //u(n-2)
-  float w1_left = 0; //ω(n-1)
-  float w2_left = (a1*u1_left - b1*w1_left)/b2; //ω(n-2)
-
-  //RIGHT WHEEL
-  float u_right = 0;
-  float u1_right = 0;
-  float u2_right = 0;
-  float w1_right = 0;
-  float w2_right = (a1*u1_right - b1*w1_right)/b2;
-
-  float wl_tab[100];
-  float wp_tab[100];
-  float w_tab[100];
-  float v_tab[100];
-  float x_tab[100];
-  float y_tab[100];
-}
-robot;
-
-void object_respond(float u_sterL, float u_sterP, float &yl, float &yp){
-     yl = (robot.a1*robot.u1_left + robot.a0*robot.u2_left - robot.b1*robot.w1_left - robot.b0 * robot.w2_left)/robot.b2;
-     yp = (robot.a1*robot.u1_right + robot.a0*robot.u2_right - robot.b1*robot.w1_right - robot.b0 * robot.w2_right)/robot.b2;
-
-     robot.w2_left = robot.w1_left;
-     robot.w1_left = yl;
-     robot.u2_left = robot.u1_left;
-     robot.u1_left = u_sterL;
-
-     robot.w2_right = robot.w1_right;
-     robot.w1_right = yp;
-     robot.u2_right = robot.u1_right;
-     robot.u1_right = u_sterP;
-}
-
-bool traffic_cone_robot_collisions(TrafficCone trafficcone) {
-  if (sqrt(pow(robot.x - trafficcone.pos_x, 2) + pow(robot.y - trafficcone.pos_y, 2)) <= robot.radius + trafficcone.r_down) {
-    return true;
-  } else {
-    return false;
-  } 
-}
-
-void draw_robot() {
-  const double from_ground = robot.from_ground;
-  const double wheel_width = robot.wheel_width;
-  const double wheel_radius = robot.wheel_radius;
-
-  //BOX
-  glColor3f(50.f / 255, 50.f / 255, 255.f/ 255);
-  draw_cube(robot.radius, 2 / 1.5 * robot.radius, 2 * wheel_radius - from_ground - 1, wheel_radius + from_ground);
-  //LEFT WHEEL
-  draw_circle(0, -robot.radius / 1.25, wheel_radius, wheel_width, 0.0, 'b'); //int x, int y, double radius, double width, double rot, char color
-  //WHEEL AXLE
-  draw_circle(0, -robot.radius / 1.25, 2.0, 2 * robot.radius / 1.25, 0.0, 'b', wheel_radius);
-  //RIGHT WHEEL
-  draw_circle(0, robot.radius / 1.25, wheel_radius, wheel_width, 0.0, 'b');
-  //MIDDLE WHEEL
-  draw_circle(-robot.radius / 1.5, 0, 3.0, wheel_width, 0.0, 'b');
-  //TRANSPARENT
-  draw_circle(0, -robot.radius / 1.25 - 7.5, wheel_radius, 10, 0.0, 't', 0.0); //int x, int y, double radius, double width, double rot, char color
-  draw_circle(0, robot.radius / 1.25 - 2.5, wheel_radius, robot.radius, 0.0, 't');
-  draw_circle(-robot.radius / 1.5, -wheel_width, 4.5, 3 * wheel_width, 0.0, 't');
-  //BOTTOM
-  draw_circle(0, from_ground, robot.radius, 2.0, 90.0, 'g', -robot.radius); //(int x, int y, double radius, double width)
-  //TOP
-  draw_circle(0, 2 * wheel_radius + 1, robot.radius, 2.0, 0.0, 'g', -robot.radius);
-  glPopMatrix();
-
-}
-
-//FUNCTION WHICH RESET ROBOT POSITION AND VELOCITIES
-void reset_robot_position(){
-    robot.x = robot.start_x;
-    robot.y = robot.start_y;
-    robot.rot_z = 0;
-    robot.prev_x = robot.x;
-    robot.prev_y = robot.y;
-    robot.left_wheel_velocity = 0.0;
-    robot.right_wheel_velocity = 0.0;
-    robot.prev_left_wheel_velocity = 0.0;
-    robot.prev_right_wheel_velocity = 0.0;
-    robot.left_wheel_velocity_ref = 0.0;
-    robot.right_wheel_velocity_ref = 0.0;
-    robot.u_left = 0;
-    robot.u_right = 0;
-}
-
-void set_viewport(int width, int height, cameraType cam) {
+void set_viewport(int width, int height, cameraType cam,Robot robot) {
   const float ar = (float) width / (float) height;
 
   glViewport(0, 0, width, height);
@@ -259,112 +120,6 @@ bool connectBluetooth(QSerialPort * serial,QString serialport) {
   return ok;
 }
 
-void velocity_extraction(std::string text) {
-  // extract from bluetooth message velocities of both wheels
-  if (text.find("wp") != std::string::npos && text.find("wl") != std::string::npos) {
-    std::regex re1(R"((wp)(.*)(wl))");
-    std::regex re2(R"((wl)(.*))");
-    std::smatch sm1;
-    std::smatch sm2;
-
-    std::regex_search(text, sm1, re1);
-    std::regex_search(text, sm2, re2);
-
-    robot.prev_left_wheel_velocity = robot.left_wheel_velocity;
-    robot.prev_right_wheel_velocity = robot.right_wheel_velocity;
-    robot.left_wheel_velocity_ref = std::stof(sm1[2]);
-    robot.right_wheel_velocity_ref = std::stof(sm2[2]);
-
-  }
-}
-
-void collisions() {
-    //convert rotation for 0-360 degrees only
-    if(robot.rot_z>=0){
-        robot.rot_z_0_360 = (int)robot.rot_z%360;
-        } else {
-            robot.rot_z_0_360 = abs((int)(360+robot.rot_z)%360);
-        }
-
-
-  // check if robot ride away from wall if true there is no more collision if false there is still collision
-  if (robot.collision_front == 1) {
-    if (robot.linear_velocity > 0 && (robot.rot_z_0_360 < 90 || robot.rot_z_0_360 > 270)) {
-      robot.collision_front = 0;
-    } else if (robot.linear_velocity < 0 && robot.rot_z_0_360 > 90 && robot.rot_z_0_360 < 270) {
-      robot.collision_front = 0;
-    } else {
-      robot.x = robot.prev_x;
-    }
-  }
-  if (robot.collision_rear == 1) {
-    if (robot.linear_velocity > 0 && robot.rot_z_0_360 > 90 && robot.rot_z_0_360 < 270) {
-      robot.collision_rear = 0;
-    } else if (robot.linear_velocity < 0 && (robot.rot_z_0_360 < 90 || robot.rot_z_0_360 > 270)) {
-      robot.collision_rear = 0;
-    } else {
-      robot.x = robot.prev_x;
-    }
-  }
-  if (robot.collision_right == 1) {
-    if (robot.linear_velocity > 0 && robot.rot_z_0_360 < 180) {
-      robot.collision_right = 0;
-    } else if (robot.linear_velocity < 0 && robot.rot_z_0_360 > 180) {
-      robot.collision_right = 0;
-    } else {
-      robot.y = robot.prev_y;
-    }
-  }
-  if (robot.collision_left == 1) {
-    if (robot.linear_velocity > 0 && robot.rot_z_0_360 > 180) {
-      robot.collision_left = 0;
-    } else if (robot.linear_velocity < 0 && robot.rot_z_0_360 < 180) {
-      robot.collision_left = 0;
-    } else {
-      robot.y = robot.prev_y;
-    }
-  }
-}
-
-void robot_movement(sf::Clock clk, float prev_time, double room_width, double room_length) {
-
-  // conversion from right and left wheels velocities to angular and linear velocities
-  robot.linear_velocity = (robot.right_wheel_velocity + robot.left_wheel_velocity) * robot.wheel_radius / 2;
-  robot.angular_velocity = (robot.right_wheel_velocity - robot.left_wheel_velocity) * robot.wheel_radius / robot.track_between_wheels;
-
-  // calculate ratational movement of robot
-  robot.rot_z += (clk.restart().asSeconds() - prev_time) * robot.angular_velocity;
-
-  //chech if is collision if not move robot if not signal with which wall is collision
-  if (abs(robot.x - (room_width / 2)) > robot.radius && abs(robot.x + (room_width / 2)) > robot.radius && robot.collision_front == 0 && robot.collision_rear == 0) {
-    robot.prev_x = robot.x;
-    robot.x += (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * cos(robot.rot_z * PI / 180);
-  } else {
-    if (robot.x > 0) {
-      robot.collision_front = 1;
-    } else {
-      robot.collision_rear = 1;
-    }
-  }
-  if (abs(robot.y - (room_length / 2)) > robot.radius && abs(robot.y + (room_length / 2)) > robot.radius && robot.collision_right == 0 && robot.collision_left == 0) {
-    robot.prev_y = robot.y;
-    robot.y += (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * sin(robot.rot_z * PI / 180);
-  } else {
-    if (robot.y > 0) {
-      robot.collision_right = 1;
-    } else {
-      robot.collision_left = 1;
-    }
-  }
-}
-
-bool finish_point_reach(Room room, double rob_x_pos, double rob_y_pos, double rob_radius){
-    if (sqrt(pow(rob_x_pos - room.fp_x_position, 2) + pow(rob_y_pos - room.fp_y_position, 2)) <= rob_radius + room.fp_radius) {
-      return true;
-    } else {
-      return false;
-    }
-}
 
 void play(int number_of_traffic_cones,QString serialport,QString mode) {
   // create the window
@@ -391,6 +146,7 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
 
   PID_controller pid_controller;
 
+  Robot robot;
 
   glClearColor(0, 0, 0, 1);
 
@@ -528,7 +284,7 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
     robot.u_right = pid_controller.PID_control(robot.right_wheel_velocity_ref,robot.right_wheel_velocity,"right");
 
     //ROBOT REAL VELOCITITES SIMULATION
-    object_respond(robot.u_left, robot.u_right, robot.left_wheel_velocity, robot.right_wheel_velocity);
+    robot.object_respond(robot.u_left, robot.u_right, robot.left_wheel_velocity, robot.right_wheel_velocity);
 
     // clear the buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -539,13 +295,13 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
     glPushMatrix();
 
     //ROBOT MOVEMENT
-    robot_movement(clk, prev_time, room.room_width, room.room_length);
+    robot.robot_movement(clk, prev_time, room.room_width, room.room_length);
 
     //collisions case
-    collisions();
+    robot.collisions();
 
     for (size_t i = 0; i < trafficCones.size(); i++) {
-      if (traffic_cone_robot_collisions(trafficCones[i])) {
+      if (robot.traffic_cone_robot_collisions(trafficCones[i])) {
         trafficCones[i].pos_x += (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * cos(robot.rot_z * PI / 180);
         trafficCones[i].pos_y += (clk.restart().asSeconds() - prev_time) * robot.linear_velocity * sin(robot.rot_z * PI / 180);
         robot.traffic_cones_collision = 1;
@@ -583,7 +339,7 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
             sound_played = 0;
             robot.traffic_cones_collision = 0;
             collision_delay = 0;
-            reset_robot_position();
+            robot.reset_robot_position();
             for (size_t i = 0; i < trafficCones.size(); i++) {
                 trafficCones[i].pos_x = 300 - 150*static_cast<int>(i);
                 trafficCones[i].pos_y = 0;
@@ -594,7 +350,7 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
     //camera movement
     cameraHandling(clk, prev_time, camera.type, false);
 
-    set_viewport(window.getSize().x, window.getSize().y, camera.type);
+    set_viewport(window.getSize().x, window.getSize().y, camera.type,robot);
 
     from_prev_plot += plot_clock.restart().asMilliseconds();
     from_prev_update += update_clock.restart().asMilliseconds();
@@ -650,7 +406,7 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
     glRotated(robot.rot_z, 0, 0.0, 1.0);
 
     //ROBOT
-    draw_robot();
+    robot.draw_robot();
 
     glPopMatrix();
 
@@ -682,7 +438,7 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
 
       //TRANSFORM VELOCITY DATA FROM CONNECTED DEVICE TO VELOCITIES OF ROBOT
       control = data[0];
-      velocity_extraction(control);
+      robot.velocity_extraction(control);
 
       data.clear();
     }
@@ -697,14 +453,14 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
 
     if(count_time){
         ride_time += prev_time;
-        is_finish_point = finish_point_reach(room,robot.x,robot.y,robot.radius);
+        is_finish_point = robot.finish_point_reach(room,robot.x,robot.y,robot.radius);
     }
     if(is_finish_point){
         std::cout<<"Ride time: "<<ride_time<<std::endl;
         is_finish_point = false;
         count_time = false;
         ride_time = 0.0;
-        reset_robot_position();
+        robot.reset_robot_position();
     }
     }
 
@@ -758,8 +514,5 @@ Menu::Menu(QWidget *parent):
 }
 
 void Menu::StartSimulation(){
-    robot.x = robot.start_x;
-    robot.y = robot.start_y;
-    robot.rot_z = 0;
     play(m_TrafficConesSpinBox->value(),m_serialPortComboBox->currentText(),m_ModeComboBox->currentText());
 }

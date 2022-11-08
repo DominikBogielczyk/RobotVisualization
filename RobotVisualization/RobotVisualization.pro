@@ -9,6 +9,7 @@ SOURCES += \
         drawingfunctions.cpp \
         main.cpp \
         pid_controller.cpp \
+        robot.cpp \
         room.cpp \
         trafficcone.cpp
 
@@ -27,6 +28,7 @@ HEADERS += \
     drawingfunctions.h \
     headers.h \
     pid_controller.h \
+    robot.h \
     room.h \
     trafficcone.h
 
