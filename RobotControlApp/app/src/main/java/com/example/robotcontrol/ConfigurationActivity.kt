@@ -6,31 +6,24 @@ import android.bluetooth.BluetoothDevice
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.*
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
+import com.example.robotcontrol.databinding.ActivityConfigurationBinding
 
 
 class ConfigurationActivity : AppCompatActivity() {
 
     private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
+    //private val bluetoothManager = this@ConfigurationActivity.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+    //private val bluetoothAdapter = bluetoothManager.adapter
+    private lateinit var binding : ActivityConfigurationBinding
 
-
-    private val listView: ListView
-        get() = findViewById(R.id.listView)
-
-    private val bluetoothImage: ImageView
-        get() = findViewById(R.id.bluetoothImage)
-
-    private val REQUEST_ENABLE_BLUETOOTH = 1
+    private val requestEnableBluetooth = 1
     private var listVisible: Boolean = false
-
-    val REQUEST_ID_MULTIPLE_PERMISSIONS = 1;
 
     companion object {
         var choosenAddress: String = "choosenAddress"
@@ -40,9 +33,11 @@ class ConfigurationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_configuration)
 
-        checkAndRequestPermissions()
+        binding = ActivityConfigurationBinding.inflate(LayoutInflater.from(this))
+        setContentView(binding.root)
+
+        //checkAndRequestPermissions()
 
 
         // Device doesn't support Bluetooth
@@ -56,12 +51,12 @@ class ConfigurationActivity : AppCompatActivity() {
 
         // BLUETOOH IMAGE: BLUE IF BLUETOOTH TURNED ON, GREY IF TURNED OFF
         if (bluetoothAdapter?.isEnabled == false) {
-            bluetoothImage.setColorFilter(bluetoothImage.context.resources.getColor(R.color.grey))
+            binding.bluetoothImage.setColorFilter(ContextCompat.getColor(this, R.color.grey))
         } else {
-            bluetoothImage.setColorFilter(bluetoothImage.context.resources.getColor(R.color.blue))
+            binding.bluetoothImage.setColorFilter(ContextCompat.getColor(this, R.color.blue))
         }
     }
-
+/*
     private fun checkAndRequestPermissions() {
         val bthConnect =
             ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
@@ -102,29 +97,29 @@ class ConfigurationActivity : AppCompatActivity() {
             )
         }
     }
-
+*/
     //ACTIONS callback
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         //turnOn - permission allowed by user
-        if (requestCode == REQUEST_ENABLE_BLUETOOTH) {
+        if (requestCode == requestEnableBluetooth) {
             if (resultCode == RESULT_OK) {
-                bluetoothImage.setColorFilter(bluetoothImage.context.resources.getColor(R.color.blue))
+                binding.bluetoothImage.setColorFilter(ContextCompat.getColor(this, R.color.blue))
             } else {
-                bluetoothImage.setColorFilter(bluetoothImage.context.resources.getColor(R.color.grey))
+                binding.bluetoothImage.setColorFilter(ContextCompat.getColor(this, R.color.grey))
             }
         }
     }
 
 
-    fun turnOn(v: View?) {
+    fun turnOn(@Suppress("UNUSED_PARAMETER")view: View) {
         if (bluetoothAdapter?.isEnabled == false) {
             val turnOn = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH)
                 == PackageManager.PERMISSION_GRANTED
             ) {
-                startActivityForResult(turnOn, REQUEST_ENABLE_BLUETOOTH)
+                startActivityForResult(turnOn, requestEnableBluetooth)
             } else {
                 Toast.makeText(
                     applicationContext,
@@ -139,9 +134,8 @@ class ConfigurationActivity : AppCompatActivity() {
 
     }
 
-    //@SuppressLint("MissingPermission")
-    fun turnOff(v: View?) {
-        bluetoothImage.setColorFilter(bluetoothImage.context.resources.getColor(R.color.grey))
+    fun turnOff(@Suppress("UNUSED_PARAMETER")view: View) {
+        binding.bluetoothImage.setColorFilter(ContextCompat.getColor(this, R.color.grey))
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH)
             == PackageManager.PERMISSION_GRANTED
@@ -157,9 +151,7 @@ class ConfigurationActivity : AppCompatActivity() {
 
     }
 
-
-    //@SuppressLint("MissingPermission")
-    fun listDevices(v: View?) {
+    fun listDevices(@Suppress("UNUSED_PARAMETER")view: View) {
         if (bluetoothAdapter?.isEnabled == false) {
             Toast.makeText(applicationContext, "Bluetooth is turned off!", Toast.LENGTH_SHORT)
                 .show()
@@ -182,10 +174,10 @@ class ConfigurationActivity : AppCompatActivity() {
                 }
                 val adapter: ArrayAdapter<*> =
                     ArrayAdapter(this, android.R.layout.simple_list_item_1, displayedList)
-                listView.adapter = adapter
-                listView.isVisible = true
+                binding.listView.adapter = adapter
+                binding.listView.isVisible = true
 
-                listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, i, _ ->
+                binding.listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, i, _ ->
                     val device: BluetoothDevice = pairedList[i]
                     val address: String = device.address
                     val name: String = device.name
@@ -198,7 +190,7 @@ class ConfigurationActivity : AppCompatActivity() {
                 listVisible = true
 
             } else {
-                listView.isVisible = false
+                binding.listView.isVisible = false
                 listVisible = false
             }
         } else {

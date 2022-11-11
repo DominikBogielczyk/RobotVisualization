@@ -382,6 +382,7 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
         for(size_t i=0; i<100; i++)
         {
           myfile << robot.x_tab[i] << ";" << robot.y_tab[i] << ";" << robot.v_tab[i] << ";" << robot.w_tab[i] << ";" << robot.wl_tab[i] << ";" << robot.wp_tab[i] << "\n";
+          //std::cout<< robot.x_tab[i] << ";" << robot.y_tab[i] << ";" << robot.v_tab[i] << ";" << robot.w_tab[i] << ";" << robot.wl_tab[i] << ";" << robot.wp_tab[i] <<std::endl;
         }
         myfile.close();
         from_prev_plot = 0;

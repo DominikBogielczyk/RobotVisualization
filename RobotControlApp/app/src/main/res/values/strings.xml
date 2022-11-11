@@ -10,6 +10,13 @@
     <string name="right">➡</string>
     <string name="disconnect">disconnect</string>
     <string name="stop">stop</string>
+    <string name="random">RANDOM</string>
+    <string name="delayHint">Delay [ms]</string>
+    <string name="slider">slider</string>
+    <string name="infoText">%1$s - Connection %2$s</string>
+    <string name="delayTime">%1$s ms</string>
+
+
 
 
 </resources>
