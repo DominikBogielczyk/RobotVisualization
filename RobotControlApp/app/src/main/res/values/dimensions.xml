@@ -16,9 +16,10 @@
     <dimen name="arrowHeight">100dp</dimen>
     <dimen name="cameraWidth">100dp</dimen>
     <dimen name="cameraHeight">100dp</dimen>
-    <dimen name="textSize">18dp</dimen>
-    <dimen name="textSizeBig">22dp</dimen>
-    <dimen name="textSizeHuge">28dp</dimen>
+    <dimen name="textSizeSmall">10sp</dimen>
+    <dimen name="textSize">18sp</dimen>
+    <dimen name="textSizeBig">22sp</dimen>
+    <dimen name="textSizeHuge">28sp</dimen>
     <dimen name="sliderTop">220dp</dimen>
     <dimen name="sliderLeftRight">175dp</dimen>
 </resources>
