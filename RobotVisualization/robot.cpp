@@ -5,19 +5,19 @@ Robot::Robot()
 
 }
 
-void Robot::object_respond(float u_sterL, float u_sterP, float &yl, float &yp){
-     yl = (a1*u1_left + a0*u2_left - b1*w1_left - b0 * w2_left)/b2;
-     yp = (a1*u1_right + a0*u2_right - b1*w1_right - b0 * w2_right)/b2;
+void Robot::object_respond(){
+     left_wheel_velocity = (a1*u1_left + a0*u2_left - b1*w1_left - b0 * w2_left)/b2;
+     right_wheel_velocity = (a1*u1_right + a0*u2_right - b1*w1_right - b0 * w2_right)/b2;
 
      w2_left = w1_left;
-     w1_left = yl;
+     w1_left = left_wheel_velocity;
      u2_left = u1_left;
-     u1_left = u_sterL;
+     u1_left = u_left;
 
      w2_right = w1_right;
-     w1_right = yp;
+     w1_right = right_wheel_velocity;
      u2_right = u1_right;
-     u1_right = u_sterP;
+     u1_right = u_right;
 }
 
 bool Robot::traffic_cone_robot_collisions(TrafficCone trafficcone) {
@@ -150,7 +150,7 @@ void Robot::robot_movement(sf::Clock clk, float prev_time, double room_width, do
   //chech if is collision if not move robot if not signal with which wall is collision
   if (abs(x - (room_width / 2)) > radius && abs(x + (room_width / 2)) > radius && collision_front == 0 && collision_rear == 0) {
     prev_x = x;
-    x += (clk.restart().asSeconds() - prev_time) * linear_velocity * cos(rot_z * PI / 180);
+    x += (clk.restart().asSeconds() - prev_time) * linear_velocity * cos(rot_z*PI/180);
   } else {
     if (x > 0) {
       collision_front = 1;
@@ -160,7 +160,7 @@ void Robot::robot_movement(sf::Clock clk, float prev_time, double room_width, do
   }
   if (abs(y - (room_length / 2)) > radius && abs(y + (room_length / 2)) > radius && collision_right == 0 && collision_left == 0) {
     prev_y = y;
-    y += (clk.restart().asSeconds() - prev_time) * linear_velocity * sin(rot_z * PI / 180);
+    y += (clk.restart().asSeconds() - prev_time) * linear_velocity * sin(rot_z*PI/180);
   } else {
     if (y > 0) {
       collision_right = 1;
@@ -170,7 +170,7 @@ void Robot::robot_movement(sf::Clock clk, float prev_time, double room_width, do
   }
 }
 
-bool Robot::finish_point_reach(Room room, double rob_x_pos, double rob_y_pos, double rob_radius){
+bool Robot::finish_point_reach(Room room){
     if (sqrt(pow(x - room.fp_x_position, 2) + pow(y - room.fp_y_position, 2)) <= radius + room.fp_radius) {
       return true;
     } else {

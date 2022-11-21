@@ -12,6 +12,7 @@
 #include <string>
 #include <regex>
 #include <vector>
+#include <tuple>
 
 #include <SFML/Window.hpp>
 #include <SFML/OpenGL.hpp>

@@ -12,7 +12,7 @@ public:
     float Kp = 1.2*T/(tau*k);
     float Ti = 2*tau;
     float Td = 0;
-    float dt = 0.1;
+    float dt = 0.015;
 
     //LEFT WHEEL
     float pre_err_left = 0;
@@ -25,7 +25,7 @@ public:
     float u_right = 0;
 
     PID_controller();
-    float PID_control(float y_ref,float y, std::string wheel);
+    float PID_wheel_control(float y_ref,float y, std::string wheel);
 };
 
 #endif // PID_CONTROLLER_H

@@ -1,11 +1,11 @@
-#include "pid_controller.h"
+#include "PID_controller.h"
 
 PID_controller::PID_controller()
 {
 
 }
 
-float PID_controller::PID_control(float y_ref,float y, std::string wheel){
+float PID_controller::PID_wheel_control(float y_ref,float y, std::string wheel){
 
     float error = y_ref - y;
     float integral = 0;
@@ -40,3 +40,4 @@ float PID_controller::PID_control(float y_ref,float y, std::string wheel){
         return U;
     }
 }
+

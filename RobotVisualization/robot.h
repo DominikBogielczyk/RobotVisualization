@@ -2,7 +2,7 @@
 #define ROBOT_H
 #include <headers.h>
 #include <trafficcone.h>
-#include <pid_controller.h>
+#include <PID_controller.h>
 #include <drawingfunctions.h>
 #include <room.h>
 
@@ -79,14 +79,14 @@ public:
     float y_tab[100];
 
     Robot();
-    void object_respond(float u_sterL, float u_sterP, float &yl, float &yp);
+    void object_respond();
     bool traffic_cone_robot_collisions(TrafficCone trafficcone);
     void draw_robot();
     void reset_robot_position();
     void velocity_extraction(std::string text);
     void collisions();
     void robot_movement(sf::Clock clk, float prev_time, double room_width, double room_length);
-    bool finish_point_reach(Room room, double rob_x_pos, double rob_y_pos, double rob_radius);
+    bool finish_point_reach(Room room);
 
 };
 

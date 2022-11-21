@@ -2,8 +2,9 @@
 #include "trafficcone.h"
 #include "drawingfunctions.h"
 #include "room.h"
-#include "pid_controller.h"
+#include "PID_controller.h"
 #include "robot.h"
+#include "pid_position_controller.h"
 
 QT_BEGIN_NAMESPACE
 
@@ -146,6 +147,8 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
 
   PID_controller pid_controller;
 
+  PID_position_controller pid_position_controller;
+
   Robot robot;
 
   glClearColor(0, 0, 0, 1);
@@ -279,12 +282,19 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
       }
 
     }
+
+    prev_time = clk.restart().asSeconds();
     //ROBOT VELOCITY REGULATION
-    robot.u_left = pid_controller.PID_control(robot.left_wheel_velocity_ref,robot.left_wheel_velocity,"left");
-    robot.u_right = pid_controller.PID_control(robot.right_wheel_velocity_ref,robot.right_wheel_velocity,"right");
+    //robot.u_left = pid_controller.PID_wheel_control(robot.left_wheel_velocity_ref,robot.left_wheel_velocity,"left");
+    //robot.u_right = pid_controller.PID_wheel_control(robot.right_wheel_velocity_ref,robot.right_wheel_velocity,"right");
+
+    // ROBOT POSITION CONTROL
+    std::tie(robot.u_left,robot.u_right) = pid_position_controller.PID_position_control(300.0,-100.0,robot.y,robot.x,robot.rot_z,"left",prev_time);
+
+    //std::tie(robot.u_left,robot.u_right) = pid_position_controller.PID_position_control_2(100.0,100.0,robot.y,robot.x,robot.rot_z,robot.start_x,robot.start_y,0,"left");
 
     //ROBOT REAL VELOCITITES SIMULATION
-    robot.object_respond(robot.u_left, robot.u_right, robot.left_wheel_velocity, robot.right_wheel_velocity);
+    robot.object_respond();
 
     // clear the buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -443,7 +453,9 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
       data.clear();
     }
 
-    prev_time = clk.restart().asSeconds();
+    //prev_time = clk.restart().asSeconds();
+
+    std::cout<<robot.x<<"-"<<robot.y<<std::endl;
 
     if(mode=="Count time mode"){
     //COUNT RIDE TIME IF ROBOT START MOVING AND STOP COUNTING IF ROBOT REACH DESTINATION
@@ -453,7 +465,7 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
 
     if(count_time){
         ride_time += prev_time;
-        is_finish_point = robot.finish_point_reach(room,robot.x,robot.y,robot.radius);
+        is_finish_point = robot.finish_point_reach(room);
     }
     if(is_finish_point){
         std::cout<<"Ride time: "<<ride_time<<std::endl;
@@ -461,9 +473,8 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
         count_time = false;
         ride_time = 0.0;
         robot.reset_robot_position();
+        }
     }
-    }
-
   }
 
   //CLOSE SERIAL PORT AFTER CLOSING APPLICATION
