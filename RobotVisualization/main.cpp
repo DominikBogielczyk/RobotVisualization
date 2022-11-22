@@ -41,6 +41,11 @@ enum cameraType {
     internal = 1
 };
 
+enum controlType {
+    velocity_control = 0,
+    position_control = 1
+};
+
 struct {
   float eye_x = 600;
   float eye_y = 0;
@@ -140,6 +145,8 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
   int from_prev_update = 0;
 
   float collision_delay = 0;
+
+  controlType control_type = velocity_control;
 
   std::ofstream myfile;
 
@@ -283,15 +290,14 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
 
     }
 
-    prev_time = clk.restart().asSeconds();
-    //ROBOT VELOCITY REGULATION
-    //robot.u_left = pid_controller.PID_wheel_control(robot.left_wheel_velocity_ref,robot.left_wheel_velocity,"left");
-    //robot.u_right = pid_controller.PID_wheel_control(robot.right_wheel_velocity_ref,robot.right_wheel_velocity,"right");
-
+    if(control_type == position_control){
     // ROBOT POSITION CONTROL
-    std::tie(robot.u_left,robot.u_right) = pid_position_controller.PID_position_control(300.0,-100.0,robot.y,robot.x,robot.rot_z,"left",prev_time);
+    std::tie(robot.left_wheel_velocity_ref,robot.right_wheel_velocity_ref) = pid_position_controller.PID_position_control_3(350.0,550.0,robot.y,robot.x,robot.rot_z,robot.track_between_wheels,robot.wheel_radius);
+    }
 
-    //std::tie(robot.u_left,robot.u_right) = pid_position_controller.PID_position_control_2(100.0,100.0,robot.y,robot.x,robot.rot_z,robot.start_x,robot.start_y,0,"left");
+    //ROBOT VELOCITY REGULATION
+    robot.u_left = pid_controller.PID_wheel_control(robot.left_wheel_velocity_ref,robot.left_wheel_velocity,"left");
+    robot.u_right = pid_controller.PID_wheel_control(robot.right_wheel_velocity_ref,robot.right_wheel_velocity,"right");
 
     //ROBOT REAL VELOCITITES SIMULATION
     robot.object_respond();
@@ -454,7 +460,7 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
       data.clear();
     }
 
-    //prev_time = clk.restart().asSeconds();
+    prev_time = clk.restart().asSeconds();
 
     std::cout<<robot.x<<"-"<<robot.y<<std::endl;
 
