@@ -24,6 +24,8 @@ public:
     float prev_y = y;
     float rot_z_0_360 = 0;
     float rot_z = 0;
+    float x_ref = 450;
+    float y_ref = 0;
 
     float left_wheel_velocity = 0.0;
     float right_wheel_velocity = 0.0;
@@ -83,7 +85,7 @@ public:
     bool traffic_cone_robot_collisions(TrafficCone trafficcone);
     void draw_robot();
     void reset_robot_position();
-    void velocity_extraction(std::string text);
+    void velocity_extraction(std::string text,bool pos_control);
     void collisions();
     void robot_movement(sf::Clock clk, float prev_time, double room_width, double room_length);
     bool finish_point_reach(Room room);

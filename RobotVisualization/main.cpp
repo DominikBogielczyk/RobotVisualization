@@ -292,7 +292,10 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
 
     if(control_type == position_control){
     // ROBOT POSITION CONTROL
-    std::tie(robot.left_wheel_velocity_ref,robot.right_wheel_velocity_ref) = pid_position_controller.PID_position_control_3(350.0,550.0,robot.y,robot.x,robot.rot_z,robot.track_between_wheels,robot.wheel_radius);
+    std::tie(robot.left_wheel_velocity_ref,robot.right_wheel_velocity_ref) = pid_position_controller.PID_position_control_3(robot.y_ref,robot.x_ref,robot.y,robot.x,robot.rot_z,robot.track_between_wheels,robot.wheel_radius);
+    if(pid_position_controller.stop==1){
+        robot.rot_z = robot.rot_z_0_360;
+    }
     }
 
     //ROBOT VELOCITY REGULATION
@@ -443,6 +446,13 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
 
       dataToCut = input;
 
+      if(input.find("pos") != std::string::npos){
+          control_type = position_control;
+          pid_position_controller.stop = 0;
+      } else if(input.find("vel") != std::string::npos){
+          control_type = velocity_control;
+      }
+
       //SEPERATE DATA FROM CONNECTED BLUETOOTH DEVICE
       while ((posOfsep = dataToCut.find(separation_sign)) != std::string::npos) {
         data.push_back(dataToCut.substr(0, posOfsep));
@@ -455,14 +465,20 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
 
       //TRANSFORM VELOCITY DATA FROM CONNECTED DEVICE TO VELOCITIES OF ROBOT
       control = data[0];
-      robot.velocity_extraction(control);
+
+
+      if(control_type == position_control){
+        robot.velocity_extraction(control,1);
+       } else if(control_type == velocity_control){
+        robot.velocity_extraction(control,0);
+      }
 
       data.clear();
     }
 
-    prev_time = clk.restart().asSeconds();
+    std::cout<<robot.x<<" "<<robot.y<<std::endl;
 
-    std::cout<<robot.x<<"-"<<robot.y<<std::endl;
+    prev_time = clk.restart().asSeconds();
 
     if(mode=="Count time mode"){
     //COUNT RIDE TIME IF ROBOT START MOVING AND STOP COUNTING IF ROBOT REACH DESTINATION

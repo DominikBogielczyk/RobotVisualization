@@ -71,7 +71,7 @@ void Robot::reset_robot_position(){
 }
 
 
-void Robot::velocity_extraction(std::string text) {
+void Robot::velocity_extraction(std::string text,bool pos_control) {
   // extract from bluetooth message velocities of both wheels
   if (text.find("wp") != std::string::npos && text.find("wl") != std::string::npos) {
     std::regex re1(R"((wp)(.*)(wl))");
@@ -84,9 +84,17 @@ void Robot::velocity_extraction(std::string text) {
 
     prev_left_wheel_velocity = left_wheel_velocity;
     prev_right_wheel_velocity = right_wheel_velocity;
-    left_wheel_velocity_ref = std::stof(sm1[2]);
-    right_wheel_velocity_ref = std::stof(sm2[2]);
 
+    if(pos_control == 0){
+        left_wheel_velocity_ref = std::stof(sm1[2]);
+        right_wheel_velocity_ref = std::stof(sm2[2]);
+    } else if(pos_control == 1){
+        left_wheel_velocity_ref = 0;
+        right_wheel_velocity_ref = 0;
+        x_ref = std::stof(sm1[2]);
+        y_ref = std::stof(sm2[2]);
+
+    }
   }
 }
 
