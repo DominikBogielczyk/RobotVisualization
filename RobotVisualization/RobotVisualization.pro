@@ -12,7 +12,9 @@ SOURCES += \
         pid_position_controller.cpp \
         robot.cpp \
         room.cpp \
-        trafficcone.cpp
+        trafficcone.cpp \
+
+
 
 INCLUDEPATH += "C:\Program Files\SFML-2.5.1\include"
 
