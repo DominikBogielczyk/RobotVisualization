@@ -37,8 +37,9 @@ private:
 
 
 enum cameraType {
-    external = 0,
-    internal = 1
+    following = 0,
+    internal = 1,
+    top = 2
 };
 
 enum controlType {
@@ -50,11 +51,11 @@ struct {
   float eye_x = 600;
   float eye_y = 0;
   float eye_z = 200;
-  cameraType type = external;
+  cameraType type = following;
 }
 camera;
 
-void set_viewport(int width, int height, cameraType cam,Robot robot) {
+void set_viewport(int width, int height, cameraType cam, Robot robot) {
   const float ar = (float) width / (float) height;
 
   glViewport(0, 0, width, height);
@@ -65,8 +66,11 @@ void set_viewport(int width, int height, cameraType cam,Robot robot) {
 
   if (cam == internal) {
     gluLookAt(robot.x, robot.y, 50, robot.x - width * cos(robot.rot_z * PI / 180), robot.y - width * sin(robot.rot_z * PI / 180), 10, 0, 0, 10);
-  } else if (cam == external) {
+  } else if (cam == following) {
     gluLookAt(robot.x + 150, camera.eye_y, camera.eye_z, robot.x, 0, 0, 0, 0, 10);
+  }
+  else if(cam == top){
+    gluLookAt(camera.eye_x, camera.eye_y, camera.eye_z, robot.x, robot.y, 0, 0, 0, 10);
   }
 }
 
@@ -94,11 +98,17 @@ void cameraHandling(sf::Clock & clk, float prev_time, cameraType & type, bool ch
 
   if (changeCamera) {
     if (type == internal) {
-      type = external;
+      type = following;
       camera.eye_x = 26;
       camera.eye_y = 5;
       camera.eye_z = 120;
-    } else if (type == external) {
+    } else if (type == following) {
+      type = top;
+      camera.eye_x = 0;
+      camera.eye_y = 0;
+      camera.eye_z = 500;
+    }
+    else if (type == top) {
       type = internal;
       camera.eye_x = 0;
       camera.eye_y = 0;
@@ -146,7 +156,7 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
 
   float collision_delay = 0;
 
-  controlType control_type = velocity_control;
+  controlType control_type = position_control;
 
   std::ofstream myfile;
 
