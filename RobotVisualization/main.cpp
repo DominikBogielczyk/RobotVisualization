@@ -48,9 +48,9 @@ enum controlType {
 };
 
 struct {
-  float eye_x = 600;
-  float eye_y = 0;
-  float eye_z = 200;
+  float eye_x = 26;
+  float eye_y = 5;
+  float eye_z = 120;
   cameraType type = following;
 }
 camera;
@@ -303,14 +303,20 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
     if(control_type == position_control){
     // ROBOT POSITION CONTROL
     std::tie(robot.left_wheel_velocity_ref,robot.right_wheel_velocity_ref) = pid_position_controller.PID_position_control_3(robot.y_ref,robot.x_ref,robot.y,robot.x,robot.rot_z,robot.track_between_wheels,robot.wheel_radius);
-    if(pid_position_controller.stop==1){
+    if(pid_position_controller.position_counter_x <= 30 and pid_position_controller.position_counter_y <= 30){
+        //ROBOT VELOCITY REGULATION
+        robot.u_left = pid_controller.PID_wheel_control(robot.left_wheel_velocity_ref,robot.left_wheel_velocity,"left");
+        robot.u_right = pid_controller.PID_wheel_control(robot.right_wheel_velocity_ref,robot.right_wheel_velocity,"right");
+    }
+    else
+    {
+        robot.u_left = 0.0;
+        robot.u_right = 0.0;
         robot.rot_z = robot.rot_z_0_360;
     }
-    }
+}
 
-    //ROBOT VELOCITY REGULATION
-    robot.u_left = pid_controller.PID_wheel_control(robot.left_wheel_velocity_ref,robot.left_wheel_velocity,"left");
-    robot.u_right = pid_controller.PID_wheel_control(robot.right_wheel_velocity_ref,robot.right_wheel_velocity,"right");
+
 
     //ROBOT REAL VELOCITITES SIMULATION
     robot.object_respond();
@@ -411,7 +417,7 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
         for(size_t i=0; i<100; i++)
         {
           myfile << robot.x_tab[i] << ";" << robot.y_tab[i] << ";" << robot.v_tab[i] << ";" << robot.w_tab[i] << ";" << robot.wl_tab[i] << ";" << robot.wp_tab[i] << "\n";
-          //std::cout<< robot.x_tab[i] << ";" << robot.y_tab[i] << ";" << robot.v_tab[i] << ";" << robot.w_tab[i] << ";" << robot.wl_tab[i] << ";" << robot.wp_tab[i] <<std::endl;
+
         }
         myfile.close();
         from_prev_plot = 0;
@@ -486,7 +492,7 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
       data.clear();
     }
 
-    std::cout<<robot.x<<" "<<robot.y<<std::endl;
+    std::cout<<robot.x << ", " << robot.y<<std::endl;
 
     prev_time = clk.restart().asSeconds();
 

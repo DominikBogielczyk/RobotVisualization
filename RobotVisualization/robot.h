@@ -24,8 +24,8 @@ public:
     float prev_y = y;
     float rot_z_0_360 = 0;
     float rot_z = 0;
-    float x_ref = 450;
-    float y_ref = 0;
+    float x_ref = 300;
+    float y_ref = 300;
 
     float left_wheel_velocity = 0.0;
     float right_wheel_velocity = 0.0;
