@@ -62,7 +62,7 @@ void set_viewport(int width, int height, cameraType cam, Robot robot) {
 
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glFrustum(-ar, ar, -1.0, 1.0, 2.0, 1000.0);
+  glFrustum(-ar, ar, -1.0, 1.0, 2.0, 2000.0);
 
   if (cam == internal) {
     gluLookAt(robot.x, robot.y, 50, robot.x - width * cos(robot.rot_z * PI / 180), robot.y - width * sin(robot.rot_z * PI / 180), 10, 0, 0, 10);
@@ -117,6 +117,7 @@ void cameraHandling(sf::Clock & clk, float prev_time, cameraType & type, bool ch
   }
 }
 
+// FUNCTION WHERE WE CONNECT TO BLUETOOTH DEVICE
 bool connectBluetooth(QSerialPort * serial,QString serialport) {
   // set bluetooth connection by serial port
   bool ok;
@@ -145,10 +146,18 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
   // activate the window
   window.setActive(true);
 
+  // SET MAX LIMIT RATE TO 60 FPS
   window.setFramerateLimit(60);
 
+  // VARIABLE WHERE IS SAVED TIME OF ONE CYCLE OF PROGRAM
   float prev_time = 0;
 
+  // VARIABLE WHERE IS SAVED TIME FROM LAST CONNECTION CHECK
+  float check_time = 0;
+
+  bool isConnection = 0;
+
+  // CLOCK VARIABLES
   sf::Clock plot_clock;
   sf::Clock update_clock;
   int from_prev_plot = 0;
@@ -156,6 +165,7 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
 
   float collision_delay = 0;
 
+  // SETTING DEFAULT TYPE OF ROBOT CONTROL
   controlType control_type = position_control;
 
   std::ofstream myfile;
@@ -300,6 +310,17 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
 
     }
 
+
+    if(check_time<1.5){
+        check_time += prev_time;
+    } else if(check_time>=1.5){
+        if(!isConnection){
+            std::cout<<"No connection!"<<std::endl;
+        }
+        check_time = 0;
+        isConnection = 0;
+    }
+
     if(control_type == position_control){
     // ROBOT POSITION CONTROL
     std::tie(robot.left_wheel_velocity_ref,robot.right_wheel_velocity_ref) = pid_position_controller.PID_position_control_3(robot.y_ref,robot.x_ref,robot.y,robot.x,robot.rot_z,robot.track_between_wheels,robot.wheel_radius);
@@ -307,14 +328,14 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
         //ROBOT VELOCITY REGULATION
         robot.u_left = pid_controller.PID_wheel_control(robot.left_wheel_velocity_ref,robot.left_wheel_velocity,"left");
         robot.u_right = pid_controller.PID_wheel_control(robot.right_wheel_velocity_ref,robot.right_wheel_velocity,"right");
-    }
+        }
     else
-    {
+        {
         robot.u_left = 0.0;
         robot.u_right = 0.0;
         robot.rot_z = robot.rot_z_0_360;
+        }
     }
-}
 
 
 
@@ -455,6 +476,10 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
     if (readData.toStdString().length() > 0) {
       input = readData.toStdString();
 
+      if (input.find("check") != std::string::npos){
+          serial -> write("connectionOK");
+          isConnection = 1;
+      } else {
       //RECEIVED COMMAND "CAMERA" - CHANGE CAMERA
       if (input.find("camera") != std::string::npos) {
         cameraHandling(clk, prev_time, camera.type, true);
@@ -485,14 +510,14 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
 
       if(control_type == position_control){
         robot.velocity_extraction(control,1);
-       } else if(control_type == velocity_control){
+        } else if(control_type == velocity_control){
         robot.velocity_extraction(control,0);
+        }
       }
-
       data.clear();
     }
 
-    std::cout<<robot.x << ", " << robot.y<<std::endl;
+    //std::cout<<robot.x << ", " << robot.y<<std::endl;
 
     prev_time = clk.restart().asSeconds();
 
