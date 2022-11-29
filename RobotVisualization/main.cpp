@@ -321,8 +321,8 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
         isConnection = 0;
     }
 
-    std::cout<<"x_ref: "<<robot.x_ref<<robot.y_ref<<std::endl;
-    std::cout<<"rot_z: "<<robot.rot_z<<std::endl;
+    //std::cout<<"x_ref: "<<robot.x_ref<<robot.y_ref<<std::endl;
+    //std::cout<<"rot_z: "<<robot.rot_z<<std::endl;
 
     if(control_type == position_control){
     // ROBOT POSITION CONTROL
@@ -338,7 +338,7 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
         robot.u_right = pid_controller.PID_wheel_control(robot.right_wheel_velocity_ref,robot.right_wheel_velocity,"right");
     }
 
-    std::cout<<pid_position_controller.position_counter_x<<" "<<pid_position_controller.position_counter_y<<std::endl;
+    //std::cout<<pid_position_controller.position_counter_x<<" "<<pid_position_controller.position_counter_y<<std::endl;
 
 
 
@@ -529,8 +529,8 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
     }
 
     std::cout<<robot.x << ", " << robot.y<<std::endl;
-    std::cout<<"control type: "<<control_type<<std::endl;
-    std::cout<<"left ref: "<<robot.left_wheel_velocity_ref<<" right ref: "<<robot.right_wheel_velocity_ref<<std::endl;
+    //std::cout<<"control type: "<<control_type<<std::endl;
+    //std::cout<<"left ref: "<<robot.left_wheel_velocity_ref<<" right ref: "<<robot.right_wheel_velocity_ref<<std::endl;
 
     prev_time = clk.restart().asSeconds();
 

@@ -70,25 +70,25 @@ class MainActivity : AppCompatActivity() {
 
         var textToSend: String
         binding.imageDown.setOnTouchListener { v: View, m: MotionEvent ->
-            textToSend = "wp" + (-velocityLeft).toString() + "wl" + (-velocityLeft).toString()
+            textToSend = "setA" + (-velocityLeft).toString() + "setB" + (-velocityLeft).toString()
             v.performClick()
             onTouch(m, textToSend, sendStop = true, binding.imageDown)
             true
         }
         binding.imageUp.setOnTouchListener { v: View, m: MotionEvent ->
-            textToSend = "wp" + velocityLeft.toString() + "wl" + velocityLeft.toString()
+            textToSend = "setA" + velocityLeft.toString() + "setB" + velocityLeft.toString()
             v.performClick()
             onTouch(m, textToSend, sendStop = true, binding.imageUp)
             true
         }
         binding.imageLeft.setOnTouchListener { v: View, m: MotionEvent ->
-            textToSend = "wp" + velocityLeft.toString() + "wl" + (-velocityLeft).toString()
+            textToSend = "setA" + velocityLeft.toString() + "setB" + (-velocityLeft).toString()
             v.performClick()
             onTouch(m, textToSend, sendStop = true, binding.imageLeft)
             true
         }
         binding.imageRight.setOnTouchListener { v: View, m: MotionEvent ->
-            textToSend = "wp" + (-velocityLeft).toString() + "wl" + velocityLeft.toString()
+            textToSend = "setA" + (-velocityLeft).toString() + "setB" + velocityLeft.toString()
             v.performClick()
             onTouch(m, textToSend, sendStop = true, binding.imageRight)
             true
@@ -154,16 +154,16 @@ class MainActivity : AppCompatActivity() {
             binding.sliderRightValue.text = binding.sliderRight.value.toString()
         }
 
-        readTimer()
+        readAndcheckTimer()
 
     }
 
     private fun sendFromSlider() {
         if(mode == 1)
         {
-            val text = "wp" + velocityRight.toString() + "wl" + velocityLeft.toString()
+            val text = "setA" + velocityRight.toString() + "setB" + velocityLeft.toString()
             val size = text.toByteArray().size.toString() + "B"
-            sendCommand("$text;$cmdIndex;$size")
+            sendCommand("$text;$cmdIndex;$size;vel")
             cmdTime = System.currentTimeMillis()
             cmdIndex += 1
             cmdIndex %= 9
@@ -187,7 +187,7 @@ class MainActivity : AppCompatActivity() {
                 image.setColorFilter(ContextCompat.getColor(this, R.color.orange))
                 text = command
                 size = text.toByteArray().size.toString() + "B"
-                sendCommand("$text;$cmdIndex;$size")
+                sendCommand("$text;$cmdIndex;$size;vel")
                 cmdTime = System.currentTimeMillis()
                 cmdIndex += 1
                 cmdIndex %= 9
@@ -195,9 +195,9 @@ class MainActivity : AppCompatActivity() {
             MotionEvent.ACTION_UP -> {
                 image.setColorFilter(ContextCompat.getColor(this, R.color.blue))
                 if (sendStop) {
-                    text = "wp0.0wl0.0"
+                    text = "setA0.0setB0.0"
                     size = text.toByteArray().size.toString() + "B"
-                    sendCommand("$text;$cmdIndex;$size")
+                    sendCommand("$text;$cmdIndex;$size;vel")
                     cmdTime = System.currentTimeMillis()
                     cmdIndex += 1
                     cmdIndex %= 9
@@ -209,7 +209,7 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-    private fun sendCommand(cmd: String) {
+    fun sendCommand(cmd: String) {
         var error = false
         if (bluetoothSocket != null) {
 
@@ -243,7 +243,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    fun readComand() {
+    fun readCommand() {
         if (bluetoothSocket != null) {
             try {
                 val inputBufferSize = bluetoothSocket!!.inputStream.available()
@@ -405,6 +405,10 @@ class MainActivity : AppCompatActivity() {
     fun okxy(@Suppress("UNUSED_PARAMETER")view: View) {
         val xString = binding.xInput.text.toString()
         val yString = binding.yInput.text.toString()
+        val xmin = -550
+        val xmax = 550
+        val ymin = -350
+        val ymax = 350
 
         var numeric = true
         try {
@@ -414,12 +418,12 @@ class MainActivity : AppCompatActivity() {
             numeric = false
         }
 
-        if (numeric && xString.toInt() in 0..100 && yString.toInt() in 0..100)
+        if (numeric && xString.toInt() in xmin..xmax && yString.toInt() in ymin..ymax)
         {
             xPosition = xString.toInt()
             yPosition = yString.toInt()
 
-            val text = "wp" + xPosition.toString() + "wl" + yPosition.toString()
+            val text = "setA" + xPosition.toString() + "setB" + yPosition.toString()
             val size = text.toByteArray().size.toString() + "B"
             sendCommand("$text;$cmdIndex;$size;pos")
             cmdTime = System.currentTimeMillis()
@@ -427,7 +431,8 @@ class MainActivity : AppCompatActivity() {
             cmdIndex %= 9
         }
         else
-            Toast.makeText(this, "Podaj x w przedziale 0 do 100 oraz y w przedziale 0 do 100", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Podaj x w przedziale "+xmin.toString()+"do "+xmax.toString()+
+                    " oraz y w przedziale "+ymin.toString()+" do "+ymax.toString(), Toast.LENGTH_LONG).show()
 
         binding.xInput.isFocusable = false
         binding.xInput.isFocusableInTouchMode = true
@@ -437,14 +442,15 @@ class MainActivity : AppCompatActivity() {
         binding.yInput.setText(yPosition.toString())
     }
 
-    private fun readTimer() {
-        object : CountDownTimer(10000000, 1) {
+    private fun readAndcheckTimer() {
+        object : CountDownTimer(1000, 1) {
             @RequiresApi(Build.VERSION_CODES.O)
             override fun onTick(millisUntilFinished: Long) {
-                readComand()
+                readCommand()
             }
 
             override fun onFinish() {
+                sendCommand("check")
                 this.start()
             }
         }.start()
