@@ -6,12 +6,47 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:animateLayoutChanges="true"
-    android:fillViewport="true">">
+    android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:animateLayoutChanges="true">
+
+        <EditText
+            android:id="@+id/yInput"
+            android:layout_width="@dimen/buttonWidth"
+            android:layout_height="@dimen/buttonHeight"
+            android:autofillHints=""
+            android:ems="10"
+            android:hint="@string/yHint"
+            android:inputType="textPersonName"
+            android:textAlignment="center"
+            android:textColor="@color/blue"
+            android:textSize="@dimen/textSizeHuge"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toTopOf="@+id/modeButton"
+            app:layout_constraintEnd_toEndOf="@+id/imageDown"
+            app:layout_constraintStart_toStartOf="@+id/xInput"
+            app:layout_constraintTop_toTopOf="@+id/buttonOKxy"
+            tools:ignore="TextContrastCheck" />
+
+        <Button
+            android:id="@+id/buttonOKxy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:height="10dp"
+            android:backgroundTint="@color/blue"
+            android:onClick="okxy"
+            android:text="@string/ok"
+            android:textSize="@dimen/textSizeBig"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toTopOf="@+id/modeButton"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/imageDown"
+            app:layout_constraintTop_toBottomOf="@+id/imageCamera" />
 
         <Button
             android:id="@+id/buttonOK"
@@ -22,11 +57,12 @@
             android:height="10dp"
             android:backgroundTint="@color/blue"
             android:onClick="ok"
-            android:text="OK"
+            android:text="@string/ok"
             android:textSize="@dimen/textSizeBig"
             app:layout_constraintBottom_toBottomOf="@+id/delayTextInput"
             app:layout_constraintEnd_toEndOf="@+id/buttonDisconnect"
-            app:layout_constraintTop_toTopOf="@+id/delayTextInput" />
+            app:layout_constraintTop_toTopOf="@+id/delayTextInput"
+            app:layout_constraintVertical_bias="1.0" />
 
         <ImageView
             android:id="@+id/imageCamera"
@@ -40,7 +76,8 @@
             app:layout_constraintTop_toBottomOf="@+id/imageUp"
             app:layout_constraintVertical_bias="0.48"
             app:srcCompat="@drawable/camera_icon"
-            app:tint="@color/blue" />
+            app:tint="@color/blue"
+            android:focusable="true" />
 
         <ImageView
             android:id="@+id/imageRight"
@@ -53,7 +90,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/imageUp"
             app:srcCompat="@drawable/right_icon"
-            app:tint="@color/blue" />
+            app:tint="@color/blue"
+            android:focusable="true" />
 
         <ImageView
             android:id="@+id/imageLeft"
@@ -67,7 +105,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/imageUp"
             app:srcCompat="@drawable/right_icon"
-            app:tint="@color/blue" />
+            app:tint="@color/blue"
+            android:focusable="true" />
 
         <ImageView
             android:id="@+id/imageDown"
@@ -81,7 +120,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/imageUp"
             app:srcCompat="@drawable/right_icon"
-            app:tint="@color/blue" />
+            app:tint="@color/blue"
+            android:focusable="true" />
 
         <ImageView
             android:id="@+id/imageUp"
@@ -95,7 +135,8 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/right_icon"
-            app:tint="@color/blue" />
+            app:tint="@color/blue"
+            android:focusable="true" />
 
         <Button
             android:id="@+id/buttonDisconnect"
@@ -136,13 +177,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="30dp"
-            android:text="OK"
+            android:text="@string/ok"
             android:textColor="@color/green"
             android:textSize="@dimen/textSizeHuge"
             app:layout_constraintBottom_toTopOf="@+id/buttonDisconnect"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/modeButton" />
+            app:layout_constraintTop_toBottomOf="@+id/modeButton"
+            tools:ignore="TextContrastCheck" />
 
         <TextView
             android:id="@+id/info"
@@ -165,15 +207,14 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView" />
 
-        <ToggleButton
+        <Button
             android:id="@+id/modeButton"
             android:layout_width="@dimen/buttonWidth"
             android:layout_height="@dimen/buttonHeight"
             android:layout_marginTop="20dp"
             android:backgroundTint="@color/blue"
+            android:contentDescription="@string/mode"
             android:textColor="@color/white"
-            android:textOff="ωl, ωp"
-            android:textOn="x, y, rot(z)"
             android:textSize="@dimen/textSizeBig"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -197,7 +238,6 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="65dp"
             android:layout_marginTop="125dp"
-            android:text="0.0"
             android:textColor="@color/blue"
             android:textSize="@dimen/textSizeHuge"
             android:visibility="invisible"
@@ -209,7 +249,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="65dp"
-            android:text="0.0"
             android:textColor="@color/blue"
             android:textSize="@dimen/textSizeHuge"
             android:visibility="invisible"
@@ -296,7 +335,27 @@
             android:textColor="@color/blue"
             android:textSize="@dimen/textSize"
             app:layout_constraintStart_toStartOf="@+id/buttonDisconnect"
-            app:layout_constraintTop_toBottomOf="@+id/checkBoxRandom" />
+            app:layout_constraintTop_toBottomOf="@+id/checkBoxRandom"
+            tools:ignore="TextContrastCheck"
+            android:autofillHints="" />
+
+        <EditText
+            android:id="@+id/xInput"
+            android:layout_width="@dimen/buttonWidth"
+            android:layout_height="@dimen/buttonHeight"
+            android:autofillHints=""
+            android:ems="10"
+            android:hint="@string/xHint"
+            android:inputType="textPersonName"
+            android:textAlignment="center"
+            android:textColor="@color/blue"
+            android:textSize="@dimen/textSizeHuge"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toTopOf="@+id/buttonOKxy"
+            app:layout_constraintEnd_toStartOf="@+id/buttonOKxy"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageCamera"
+            tools:ignore="TextContrastCheck" />
 
         <CheckBox
             android:id="@+id/checkBoxRandom"
@@ -308,13 +367,13 @@
             android:textColor="@color/blue"
             android:textSize="@dimen/textSize"
             app:layout_constraintStart_toStartOf="@+id/buttonDisconnect"
-            app:layout_constraintTop_toBottomOf="@+id/buttonDisconnect" />
+            app:layout_constraintTop_toBottomOf="@+id/buttonDisconnect"
+            tools:ignore="TextContrastCheck" />
 
         <Button
             android:id="@+id/button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Button"
             android:visibility="invisible"
             app:layout_constraintStart_toStartOf="@+id/delayTextInput"
             app:layout_constraintTop_toBottomOf="@+id/delayTextInput" />

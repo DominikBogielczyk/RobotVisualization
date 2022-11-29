@@ -8,10 +8,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.content.pm.PackageManager
-import android.os.AsyncTask
-import android.os.Build
-import android.os.Bundle
-import android.os.CountDownTimer
+import android.os.*
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -28,7 +25,6 @@ import java.io.IOException
 import java.lang.Double.parseDouble
 import java.util.*
 import kotlin.concurrent.schedule
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -49,6 +45,10 @@ class MainActivity : AppCompatActivity() {
     private var velocityLeft = 0.0F
     private var velocityRight = 0.0F
     private var extraDelay : Long = 0
+    private var xPosition : Int = 0
+    private var yPosition : Int = 0
+
+    private var mode = 0
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,8 +58,12 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(LayoutInflater.from(this))
         setContentView(binding.root)
 
+        //GET BLUETOOTH CLIENT FROM CONFIGURATION
         clientAddress = intent.getStringExtra(ConfigurationActivity.choosenAddress).toString()
         clientName = intent.getStringExtra(ConfigurationActivity.choosenName).toString()
+
+        //INITIAL TEXT "MODE BUTTON"
+        binding.modeButton.text = getString(R.string.mode, "v,ω")
 
         //BEGIN CONNECTION
         ConnectThread(this).execute()
@@ -94,13 +98,15 @@ class MainActivity : AppCompatActivity() {
             onTouch(m, "camera", sendStop = false, binding.imageCamera)
             true
         }
-        binding.modeButton.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                changeVisibility(1)
-            } else {
-                changeVisibility(2)
-            }
+
+        binding.modeButton.setOnClickListener()
+        {
+            mode += 1
+            mode %= 3
+            changeVisibility(mode)
+
         }
+
         binding.sliderLeft.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
             override fun onStartTrackingTouch(slider: Slider) {
             }
@@ -120,7 +126,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onStopTrackingTouch(slider: Slider) {
-                sendFromSlider()
+                    sendFromSlider()
             }
         })
         binding.sliderRight.addOnChangeListener { _, _, _ ->
@@ -133,10 +139,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onStopTrackingTouch(slider: Slider) {
-                if (binding.modeButton.isChecked) {
                     sendFromSlider()
-                }
-
             }
         })
         binding.sliderBoth.addOnChangeListener { _, _, _ ->
@@ -156,12 +159,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun sendFromSlider() {
-        val text = "wp" + velocityRight.toString() + "wl" + velocityLeft.toString()
-        val size = text.toByteArray().size.toString() + "B"
-        sendCommand("$text;$cmdIndex;$size")
-        cmdTime = System.currentTimeMillis()
-        cmdIndex += 1
-        cmdIndex %= 9
+        if(mode == 1)
+        {
+            val text = "wp" + velocityRight.toString() + "wl" + velocityLeft.toString()
+            val size = text.toByteArray().size.toString() + "B"
+            sendCommand("$text;$cmdIndex;$size")
+            cmdTime = System.currentTimeMillis()
+            cmdIndex += 1
+            cmdIndex %= 9
+        }
     }
 
 
@@ -310,18 +316,25 @@ class MainActivity : AppCompatActivity() {
 
     fun changeVisibility(v: Int) {
         when (v) {
+            //VELOCITY CONTROL MODE
             0 -> {
-                binding.imageDown.visibility = View.INVISIBLE
-                binding.imageUp.visibility = View.INVISIBLE
-                binding.imageLeft.visibility = View.INVISIBLE
-                binding.imageRight.visibility = View.INVISIBLE
+                binding.imageDown.visibility = View.VISIBLE
+                binding.imageUp.visibility = View.VISIBLE
+                binding.imageLeft.visibility = View.VISIBLE
+                binding.imageRight.visibility = View.VISIBLE
                 binding.sliderLeft.visibility = View.INVISIBLE
                 binding.sliderRight.visibility = View.INVISIBLE
-                binding.sliderBoth.visibility = View.INVISIBLE
-                binding.sliderBothValue.visibility = View.INVISIBLE
+                binding.sliderBoth.visibility = View.VISIBLE
+                binding.sliderBothValue.visibility = View.VISIBLE
                 binding.sliderLeftValue.visibility = View.INVISIBLE
                 binding.sliderRightValue.visibility = View.INVISIBLE
+                binding.stopButton.visibility = View.INVISIBLE
+                binding.xInput.visibility = View.INVISIBLE
+                binding.buttonOKxy.visibility = View.INVISIBLE
+                binding.yInput.visibility = View.INVISIBLE
+                binding.modeButton.text = getString(R.string.mode, "v,ω")
             }
+            //WHEELS VELOCITY CONTROL MODE
             1 -> {
                 binding.imageDown.visibility = View.INVISIBLE
                 binding.imageUp.visibility = View.INVISIBLE
@@ -334,20 +347,37 @@ class MainActivity : AppCompatActivity() {
                 binding.sliderLeftValue.visibility = View.VISIBLE
                 binding.sliderRightValue.visibility = View.VISIBLE
                 binding.stopButton.visibility = View.VISIBLE
+                binding.modeButton.text = getString(R.string.mode, "ωL, ωP")
             }
+            //POSITION CONTROL MODE
             2 -> {
-                binding.imageDown.visibility = View.VISIBLE
-                binding.imageUp.visibility = View.VISIBLE
-                binding.imageLeft.visibility = View.VISIBLE
-                binding.imageRight.visibility = View.VISIBLE
                 binding.sliderLeft.visibility = View.INVISIBLE
                 binding.sliderRight.visibility = View.INVISIBLE
-                binding.sliderBoth.visibility = View.VISIBLE
-                binding.sliderBothValue.visibility = View.VISIBLE
+                binding.sliderBoth.visibility = View.INVISIBLE
+                binding.sliderBothValue.visibility = View.INVISIBLE
                 binding.sliderLeftValue.visibility = View.INVISIBLE
                 binding.sliderRightValue.visibility = View.INVISIBLE
                 binding.stopButton.visibility = View.INVISIBLE
+                binding.xInput.visibility = View.VISIBLE
+                binding.xInput.visibility = View.VISIBLE
+                binding.buttonOKxy.visibility = View.VISIBLE
+                binding.yInput.visibility = View.VISIBLE
+                binding.modeButton.text = getString(R.string.mode, "x,y")
             }
+            //ERROR
+            4 -> {
+                binding.imageDown.visibility = View.INVISIBLE
+                binding.imageUp.visibility = View.INVISIBLE
+                binding.imageLeft.visibility = View.INVISIBLE
+                binding.imageRight.visibility = View.INVISIBLE
+                binding.sliderLeft.visibility = View.INVISIBLE
+                binding.sliderRight.visibility = View.INVISIBLE
+                binding.sliderBoth.visibility = View.INVISIBLE
+                binding.sliderBothValue.visibility = View.INVISIBLE
+                binding.sliderLeftValue.visibility = View.INVISIBLE
+                binding.sliderRightValue.visibility = View.INVISIBLE
+            }
+
         }
 
     }
@@ -370,6 +400,41 @@ class MainActivity : AppCompatActivity() {
         binding.delayTextInput.isFocusableInTouchMode = true
         binding.delayTextInput.setText(extraDelay.toString())
 
+    }
+
+    fun okxy(@Suppress("UNUSED_PARAMETER")view: View) {
+        val xString = binding.xInput.text.toString()
+        val yString = binding.yInput.text.toString()
+
+        var numeric = true
+        try {
+            parseDouble(xString)
+            parseDouble(yString)
+        } catch (e: NumberFormatException) {
+            numeric = false
+        }
+
+        if (numeric && xString.toInt() in 0..100 && yString.toInt() in 0..100)
+        {
+            xPosition = xString.toInt()
+            yPosition = yString.toInt()
+
+            val text = "wp" + xPosition.toString() + "wl" + yPosition.toString()
+            val size = text.toByteArray().size.toString() + "B"
+            sendCommand("$text;$cmdIndex;$size;pos")
+            cmdTime = System.currentTimeMillis()
+            cmdIndex += 1
+            cmdIndex %= 9
+        }
+        else
+            Toast.makeText(this, "Podaj x w przedziale 0 do 100 oraz y w przedziale 0 do 100", Toast.LENGTH_LONG).show()
+
+        binding.xInput.isFocusable = false
+        binding.xInput.isFocusableInTouchMode = true
+        binding.xInput.setText(xPosition.toString())
+        binding.yInput.isFocusable = false
+        binding.yInput.isFocusableInTouchMode = true
+        binding.yInput.setText(yPosition.toString())
     }
 
     private fun readTimer() {
@@ -412,9 +477,10 @@ class MainActivity : AppCompatActivity() {
                     val device: BluetoothDevice = bluetoothAdapter.getRemoteDevice(clientAddress)
 
                     bluetoothSocket = device.createRfcommSocketToServiceRecord(myUUID)
+                    bluetoothSocket!!.connect()
+
                     // Cancel discovery because it otherwise slows down the connection.
                     BluetoothAdapter.getDefaultAdapter().cancelDiscovery()
-                    bluetoothSocket!!.connect()
                 }
 
             } catch (e: IOException) {
@@ -430,7 +496,7 @@ class MainActivity : AppCompatActivity() {
                 Log.i("info", "Connection failed")
                 this@MainActivity.binding.info.text = getString(R.string.infoText, clientName, "failed")
                 this@MainActivity.binding.info.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.red))
-                this@MainActivity.changeVisibility(0)
+                this@MainActivity.changeVisibility(4)
 
             } else {
                 Log.i("info", "Connection OK")
