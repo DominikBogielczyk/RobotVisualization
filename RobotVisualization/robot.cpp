@@ -73,9 +73,9 @@ void Robot::reset_robot_position(){
 
 void Robot::velocity_extraction(std::string text,bool pos_control) {
   // extract from bluetooth message velocities of both wheels
-  if (text.find("wp") != std::string::npos && text.find("wl") != std::string::npos) {
-    std::regex re1(R"((wp)(.*)(wl))");
-    std::regex re2(R"((wl)(.*))");
+  if (text.find("setA") != std::string::npos && text.find("setB") != std::string::npos) {
+    std::regex re1(R"((setA)(.*)(setB))");
+    std::regex re2(R"((setB)(.*))");
     std::smatch sm1;
     std::smatch sm2;
 

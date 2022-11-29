@@ -31,13 +31,15 @@ std::tuple<float,float> PID_position_controller::PID_position_control_3(float y_
     float w_p = (2*v + L/2 * w)/(2*R);
 
     if((prev_err==error_s && abs(error_rot)>=40) || stop==1){
+        this -> position_counter_x = 1;
+        this -> position_counter_y = 1;
         stop = 1;
         w_l = 0;
         w_p = 0;
         prev_err = -1;
+    } else {
+       prev_err = error_s;
     }
-
-    prev_err = error_s;
 
     return {w_l,w_p};
 }

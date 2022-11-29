@@ -166,7 +166,7 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
   float collision_delay = 0;
 
   // SETTING DEFAULT TYPE OF ROBOT CONTROL
-  controlType control_type = position_control;
+  controlType control_type = velocity_control;
 
   std::ofstream myfile;
 
@@ -321,21 +321,24 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
         isConnection = 0;
     }
 
+    std::cout<<"x_ref: "<<robot.x_ref<<robot.y_ref<<std::endl;
+    std::cout<<"rot_z: "<<robot.rot_z<<std::endl;
+
     if(control_type == position_control){
     // ROBOT POSITION CONTROL
     std::tie(robot.left_wheel_velocity_ref,robot.right_wheel_velocity_ref) = pid_position_controller.PID_position_control_3(robot.y_ref,robot.x_ref,robot.y,robot.x,robot.rot_z,robot.track_between_wheels,robot.wheel_radius);
-    if(pid_position_controller.position_counter_x <= 30 and pid_position_controller.position_counter_y <= 30){
+    if(pid_position_controller.position_counter_x <= 10 and pid_position_controller.position_counter_y <= 10){
         //ROBOT VELOCITY REGULATION
         robot.u_left = pid_controller.PID_wheel_control(robot.left_wheel_velocity_ref,robot.left_wheel_velocity,"left");
         robot.u_right = pid_controller.PID_wheel_control(robot.right_wheel_velocity_ref,robot.right_wheel_velocity,"right");
         }
-    else
-        {
-        robot.u_left = 0.0;
-        robot.u_right = 0.0;
-        robot.rot_z = robot.rot_z_0_360;
-        }
+    } else if(control_type == velocity_control){
+        // ROBOT VELOCITY CONTROL
+        robot.u_left = pid_controller.PID_wheel_control(robot.left_wheel_velocity_ref,robot.left_wheel_velocity,"left");
+        robot.u_right = pid_controller.PID_wheel_control(robot.right_wheel_velocity_ref,robot.right_wheel_velocity,"right");
     }
+
+    std::cout<<pid_position_controller.position_counter_x<<" "<<pid_position_controller.position_counter_y<<std::endl;
 
 
 
@@ -510,14 +513,24 @@ void play(int number_of_traffic_cones,QString serialport,QString mode) {
 
       if(control_type == position_control){
         robot.velocity_extraction(control,1);
+        pid_position_controller.start_x=robot.x;
+        pid_position_controller.start_y=robot.y;
+        robot.start_x = robot.x;
+        robot.start_y = robot.y;
+        robot.rot_z = robot.rot_z_0_360;
+        pid_position_controller.stop = 0;
         } else if(control_type == velocity_control){
         robot.velocity_extraction(control,0);
+        robot.start_x = robot.x;
+        robot.start_y = robot.y;
         }
       }
       data.clear();
     }
 
-    //std::cout<<robot.x << ", " << robot.y<<std::endl;
+    std::cout<<robot.x << ", " << robot.y<<std::endl;
+    std::cout<<"control type: "<<control_type<<std::endl;
+    std::cout<<"left ref: "<<robot.left_wheel_velocity_ref<<" right ref: "<<robot.right_wheel_velocity_ref<<std::endl;
 
     prev_time = clk.restart().asSeconds();
 
