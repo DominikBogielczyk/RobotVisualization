@@ -18,8 +18,6 @@ import com.example.robotcontrol.databinding.ActivityConfigurationBinding
 class ConfigurationActivity : AppCompatActivity() {
 
     private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
-    //private val bluetoothManager = this@ConfigurationActivity.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-    //private val bluetoothAdapter = bluetoothManager.adapter
     private lateinit var binding : ActivityConfigurationBinding
 
     private val requestEnableBluetooth = 1
@@ -37,9 +35,6 @@ class ConfigurationActivity : AppCompatActivity() {
         binding = ActivityConfigurationBinding.inflate(LayoutInflater.from(this))
         setContentView(binding.root)
 
-        //checkAndRequestPermissions()
-
-
         // Device doesn't support Bluetooth
         if (bluetoothAdapter == null) {
             Toast.makeText(
@@ -56,48 +51,6 @@ class ConfigurationActivity : AppCompatActivity() {
             binding.bluetoothImage.setColorFilter(ContextCompat.getColor(this, R.color.blue))
         }
     }
-/*
-    private fun checkAndRequestPermissions() {
-        val bthConnect =
-            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT)
-        val bthAdmin =
-            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN)
-
-        val bthScan =
-            ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_SCAN)
-
-        if (bthConnect != PackageManager.PERMISSION_GRANTED) {
-
-            Log.i("info", "bthConnect != PackageManager.PERMISSION_GRANTED")
-
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.BLUETOOTH_CONNECT),
-                201
-            )
-        }
-        if (bthAdmin != PackageManager.PERMISSION_GRANTED) {
-
-            Log.i("info", "bthAdmin != PackageManager.PERMISSION_GRANTED")
-
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.BLUETOOTH_ADMIN),
-                202
-            )
-        }
-        if (bthScan != PackageManager.PERMISSION_GRANTED) {
-
-            Log.i("info", "bthScan != PackageManager.PERMISSION_GRANTED")
-
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.BLUETOOTH_SCAN),
-                203
-            )
-        }
-    }
-*/
     //ACTIONS callback
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
