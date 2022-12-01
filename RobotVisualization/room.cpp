@@ -36,7 +36,7 @@ void  Room::draw_floor() {
 }
 
 void Room::draw_walls() {
-  //RIGHT
+  // right
   glBegin(GL_POLYGON);
   glColor3f(50.f / 255, 50.f / 255, 255.f / 255);
   glVertex3d(-room_width / 2, room_length / 2, 0);
@@ -45,7 +45,7 @@ void Room::draw_walls() {
   glVertex3d(-room_width / 2, room_length / 2, room_height);
   glEnd();
 
-  //LEFT
+  // left
   glBegin(GL_POLYGON);
   glColor3f(50.f / 255, 50.f / 255, 255.f / 255);
   glVertex3d(-room_width / 2, -room_length / 2, 0);
@@ -54,7 +54,7 @@ void Room::draw_walls() {
   glVertex3d(-room_width / 2, -room_length / 2, room_height);
   glEnd();
 
-  //REAR
+  // rear
   glBegin(GL_POLYGON);
   glColor3f(51.f / 255, 153.f / 255, 255.f / 255);
   glVertex3d(-room_width / 2, -room_length / 2, 0);
@@ -63,7 +63,7 @@ void Room::draw_walls() {
   glVertex3d(-room_width / 2, -room_length / 2, room_height);
   glEnd();
 
-  //FRONT
+  // front
   glBegin(GL_POLYGON);
   glColor3f(51.f / 255, 153.f / 255, 255.f / 255);
   glVertex3d(room_width / 2, -room_length / 2, 0);
@@ -73,7 +73,7 @@ void Room::draw_walls() {
   glEnd();
 }
 
-void Room::draw_doors() {
+void Room::draw_door() {
   glBegin(GL_POLYGON);
   glColor3d(110.0 / 255.0, 64.0 / 255.0, 48.0 / 255);
   glVertex3d(-doors_position / 2 + 1, -doors_width / 2, 0);
@@ -94,14 +94,14 @@ void Room::draw_finish_point(){
 
     int num = 20;
 
-    glBegin(GL_QUAD_STRIP); //BEGIN CIRCLE
+    glBegin(GL_QUAD_STRIP); // begin circle
     for (int i = 0; i <= num; i++) {
       glVertex3f(fp_x_position + fp_radius * cos(i * 2 * PI / num), fp_y_position,fp_radius * sin(i * 2 * PI / num));
       glVertex3f(fp_x_position + fp_radius * cos(i * 2 * PI / num), fp_y_position + fp_height,fp_radius * sin(i * 2 * PI / num));
       glVertex3f(fp_x_position + fp_radius * cos((i + 1) * 2 * PI / num), fp_y_position,fp_radius * sin((i + 1) * 2 * PI / num));
       glVertex3f(fp_x_position + fp_radius * cos((i + 1) * 2 * PI / num), fp_y_position + fp_height,fp_radius * sin((i + 1) * 2 * PI / num));
     }
-    glEnd(); //END
+    glEnd(); // end
 
     glPopMatrix();
 }

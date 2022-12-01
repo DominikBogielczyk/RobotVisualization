@@ -6,9 +6,11 @@ Robot::Robot()
 }
 
 void Robot::object_respond(){
+     // object respond for wheels angular velocities
      left_wheel_velocity = (a1*u1_left + a0*u2_left - b1*w1_left - b0 * w2_left)/b2;
      right_wheel_velocity = (a1*u1_right + a0*u2_right - b1*w1_right - b0 * w2_right)/b2;
 
+     // write past states
      w2_left = w1_left;
      w1_left = left_wheel_velocity;
      u2_left = u1_left;
@@ -21,6 +23,7 @@ void Robot::object_respond(){
 }
 
 bool Robot::traffic_cone_robot_collisions(TrafficCone trafficcone) {
+  // chceck coolision between robot and traffic cone
   if (sqrt(pow(x - trafficcone.pos_x, 2) + pow(y - trafficcone.pos_y, 2)) <= radius + trafficcone.r_down) {
     return true;
   } else {
@@ -30,31 +33,32 @@ bool Robot::traffic_cone_robot_collisions(TrafficCone trafficcone) {
 
 void Robot::draw_robot() {
 
-  //BOX
+  // box
   glColor3f(50.f / 255, 50.f / 255, 255.f/ 255);
   draw_cube(radius, 2 / 1.5 * radius, 2 * wheel_radius - from_ground - 1, wheel_radius + from_ground);
-  //LEFT WHEEL
+  // left wheel
   draw_circle(0, -radius / 1.25, wheel_radius, wheel_width, 0.0, 'b'); //int x, int y, double radius, double width, double rot, char color
-  //WHEEL AXLE
+  // wheel axes
   draw_circle(0, -radius / 1.25, 2.0, 2 * radius / 1.25, 0.0, 'b', wheel_radius);
-  //RIGHT WHEEL
+  // right wheel
   draw_circle(0, radius / 1.25, wheel_radius, wheel_width, 0.0, 'b');
-  //MIDDLE WHEEL
+  // middle wheel
   draw_circle(-radius / 1.5, 0, 3.0, wheel_width, 0.0, 'b');
-  //TRANSPARENT
+  // transparent
   draw_circle(0, -radius / 1.25 - 7.5, wheel_radius, 10, 0.0, 't', 0.0); //int x, int y, double radius, double width, double rot, char color
   draw_circle(0, radius / 1.25 - 2.5, wheel_radius, radius, 0.0, 't');
   draw_circle(-radius / 1.5, -wheel_width, 4.5, 3 * wheel_width, 0.0, 't');
-  //BOTTOM
+  // bottom
   draw_circle(0, from_ground, radius, 2.0, 90.0, 'g', -radius); //(int x, int y, double radius, double width)
-  //TOP
+  // top
   draw_circle(0, 2 * wheel_radius + 1, radius, 2.0, 0.0, 'g', -radius);
   glPopMatrix();
 
 }
 
-//FUNCTION WHICH RESET ROBOT POSITION AND VELOCITIES
+
 void Robot::reset_robot_position(){
+    // restart robot velocities, position and voltages to start state
     x = start_x;
     y = start_y;
     rot_z = 0;
@@ -71,7 +75,7 @@ void Robot::reset_robot_position(){
 }
 
 
-void Robot::velocity_extraction(std::string text,bool pos_control) {
+void Robot::input_extraction(std::string text,bool pos_control) {
   // extract from bluetooth message velocities of both wheels
   if (text.find("setA") != std::string::npos && text.find("setB") != std::string::npos) {
     std::regex re1(R"((setA)(.*)(setB))");
@@ -85,6 +89,7 @@ void Robot::velocity_extraction(std::string text,bool pos_control) {
     prev_left_wheel_velocity = left_wheel_velocity;
     prev_right_wheel_velocity = right_wheel_velocity;
 
+    // referance position extraction if position control or referance velocity extraction if velocity control
     if(pos_control == 0){
         left_wheel_velocity_ref = std::stof(sm1[2]);
         right_wheel_velocity_ref = std::stof(sm2[2]);
@@ -99,7 +104,7 @@ void Robot::velocity_extraction(std::string text,bool pos_control) {
 }
 
 void Robot::collisions() {
-    //convert rotation for 0-360 degrees only
+    // convert rotation for 0-360 degrees only
     if(rot_z>=0){
         rot_z_0_360 = (int)rot_z%360;
         } else {
@@ -179,6 +184,7 @@ void Robot::robot_movement(sf::Clock clk, float prev_time, double room_width, do
 }
 
 bool Robot::finish_point_reach(Room room){
+    // check if is finish point reach by robot
     if (sqrt(pow(x - room.fp_x_position, 2) + pow(y - room.fp_y_position, 2)) <= radius + room.fp_radius) {
       return true;
     } else {
