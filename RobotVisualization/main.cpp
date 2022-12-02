@@ -326,17 +326,6 @@ void play(int number_of_traffic_cones, QString serialport, QString mode) {
 
         }
 
-        // checking if is connection with bluetooth device if not print text
-        if (check_time < 1.5) {
-            check_time += prev_time;
-        } else if (check_time >= 1.5) {
-            if (!isConnection) {
-                std::cout << "No connection!" << std::endl;
-            }
-            check_time = 0;
-            isConnection = 0;
-        }
-
         // checking what type of control is set
         if (control_type == position_control) {
             // robot position control which return reference angular velocities of wheels
@@ -479,6 +468,17 @@ void play(int number_of_traffic_cones, QString serialport, QString mode) {
 
         window.display();
 
+        // checking if is connection with bluetooth device if not print text and set connection flag to 0
+        if (check_time < 1.2) {
+            check_time += prev_time;
+        } else if (check_time >= 1.2) {
+            std::cout << "No connection!" << std::endl;
+            isConnection = 0;
+            // stop robot when connection lost
+            robot.left_wheel_velocity_ref = 0;
+            robot.right_wheel_velocity_ref = 0;
+        }
+
         // read data from bluetooth device
         readData = serial -> readAll();
         serial -> waitForReadyRead(10);
@@ -489,6 +489,7 @@ void play(int number_of_traffic_cones, QString serialport, QString mode) {
 
             // check if there is input to robot data or connection check data
             if (input.find("check") != std::string::npos) {
+                check_time = 0;
                 serial -> write("connectionOK");
                 isConnection = 1;
             } else {
