@@ -101,10 +101,21 @@ class MainActivity : AppCompatActivity() {
 
         binding.modeButton.setOnClickListener()
         {
+            //MODE WHEEL VELOCITY CHANGE TO MODE POSITION, SO
+            //WE HAVE TO STOP THE ROBOT
+            if(mode == 1)
+            {
+                velocityLeft = 0.0F
+                velocityRight = 0.0F
+                binding.sliderRight.value = 0.0F
+                binding.sliderLeft.value = 0.0F
+                binding.sliderBoth.value = 0.0F
+                sendFromSlider()
+            }
             mode += 1
             mode %= 3
-            changeVisibility(mode)
 
+            changeVisibility(mode)
         }
 
         binding.sliderLeft.addOnSliderTouchListener(object : Slider.OnSliderTouchListener {
@@ -333,6 +344,7 @@ class MainActivity : AppCompatActivity() {
                 binding.buttonOKxy.visibility = View.INVISIBLE
                 binding.yInput.visibility = View.INVISIBLE
                 binding.modeButton.text = getString(R.string.mode, "v,ω")
+                binding.stopButton.visibility = View.INVISIBLE
             }
             //WHEELS VELOCITY CONTROL MODE
             1 -> {
@@ -348,6 +360,7 @@ class MainActivity : AppCompatActivity() {
                 binding.sliderRightValue.visibility = View.VISIBLE
                 binding.stopButton.visibility = View.VISIBLE
                 binding.modeButton.text = getString(R.string.mode, "ωL, ωP")
+                binding.stopButton.visibility = View.VISIBLE
             }
             //POSITION CONTROL MODE
             2 -> {
@@ -431,7 +444,7 @@ class MainActivity : AppCompatActivity() {
             cmdIndex %= 9
         }
         else
-            Toast.makeText(this, "Podaj x w przedziale "+xmin.toString()+"do "+xmax.toString()+
+            Toast.makeText(this, "Podaj x w przedziale "+xmin.toString()+" do "+xmax.toString()+
                     " oraz y w przedziale "+ymin.toString()+" do "+ymax.toString(), Toast.LENGTH_LONG).show()
 
         binding.xInput.isFocusable = false
@@ -450,7 +463,9 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onFinish() {
-                sendCommand("check")
+                if(isConnected) {
+                    sendCommand("check")
+                }
                 this.start()
             }
         }.start()
