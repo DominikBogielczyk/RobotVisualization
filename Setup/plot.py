@@ -110,7 +110,7 @@ def animate2(counter):
     plot2[1][1].set_xlabel('pozycja x [cm]')
     plot2[1][1].set_ylabel('pozycja y [cm]')
     plot2[1][1].axis(xmin=-600, xmax=600)
-    plot2[1][1].axis(ymin=-300, ymax=300)
+    plot2[1][1].axis(ymin=-400, ymax=400)
     plot2[1][1].grid()
     plot2[1][1].plot(x_list, y_list, 'g')
 
