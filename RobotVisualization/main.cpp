@@ -410,34 +410,43 @@ void play(int number_of_traffic_cones, QString serialport, QString mode) {
         cameraHandling(clk, prev_time, camera.type, false);
         set_viewport(window.getSize().x, window.getSize().y, camera.type, robot);
 
-        // update data to plot
+        // update data to plot every 200ms
         from_prev_plot += plot_clock.restart().asMilliseconds();
         from_prev_update += update_clock.restart().asMilliseconds();
-        if (from_prev_update >= 100) {
+        if (from_prev_update >= 200) {
 
-            for (size_t i = 0; i < 100 - 1; i++) {
+            for (size_t i = 0; i < 200 - 1; i++) {
                 robot.x_tab[i] = robot.x_tab[i + 1];
                 robot.y_tab[i] = robot.y_tab[i + 1];
-                robot.v_tab[i] = robot.v_tab[i + 1];
-                robot.w_tab[i] = robot.w_tab[i + 1];
+                robot.uL_tab[i] = robot.uL_tab[i + 1];
+                robot.uR_tab[i] = robot.uR_tab[i + 1];
                 robot.wl_tab[i] = robot.wl_tab[i + 1];
                 robot.wp_tab[i] = robot.wp_tab[i + 1];
+                robot.wlref_tab[i] = robot.wlref_tab[i + 1];
+                robot.wpref_tab[i] = robot.wpref_tab[i + 1];
+                robot.xref_tab[i] = robot.xref_tab[i + 1];
+                robot.yref_tab[i] = robot.yref_tab[i + 1];
             }
-            robot.x_tab[99] = robot.x;
-            robot.y_tab[99] = robot.y;
-            robot.v_tab[99] = robot.linear_velocity;
-            robot.w_tab[99] = robot.angular_velocity;
-            robot.wl_tab[99] = robot.left_wheel_velocity;
-            robot.wp_tab[99] = robot.right_wheel_velocity;
+            robot.x_tab[199] = robot.x;
+            robot.y_tab[199] = robot.y;
+            robot.uL_tab[199] = robot.u_left;
+            robot.uR_tab[199] = robot.u_right;
+            robot.wl_tab[199] = robot.left_wheel_velocity;
+            robot.wp_tab[199] = robot.right_wheel_velocity;
+            robot.wlref_tab[199] = robot.left_wheel_velocity_ref;
+            robot.wpref_tab[199] = robot.right_wheel_velocity_ref;
+            robot.xref_tab[199] = robot.x_ref;
+            robot.yref_tab[199] = robot.y_ref;
 
             from_prev_update = 0;
         }
-        // new data to plot every 1000ms
-        if (from_prev_plot >= 1000) {
+        // new data to plot every 500ms
+        if (from_prev_plot >= 500) {
             myfile.open("robot_data.txt", std::ios::out);
-            myfile << "x;y;v,ω;ωL;ωP\n";
-            for (size_t i = 0; i < 100; i++) {
-                myfile << robot.x_tab[i] << ";" << robot.y_tab[i] << ";" << robot.v_tab[i] << ";" << robot.w_tab[i] << ";" << robot.wl_tab[i] << ";" << robot.wp_tab[i] << "\n";
+            myfile << "x;y;v,ω;ωL;ωP;ωLset;ωPset;xset;yset\n";
+            for (size_t i = 0; i < 200; i++) {
+                myfile << robot.x_tab[i] << ";" << robot.y_tab[i] << ";" << robot.uL_tab[i] << ";" << robot.uR_tab[i] << ";" << robot.wl_tab[i] << ";" << robot.wp_tab[i]
+                          << ";" << robot.wlref_tab[i] << ";" << robot.wpref_tab[i] << ";" << robot.xref_tab[i] << ";" << robot.yref_tab[i] <<"\n";
 
             }
             myfile.close();
@@ -472,7 +481,7 @@ void play(int number_of_traffic_cones, QString serialport, QString mode) {
         if (check_time < 1.2) {
             check_time += prev_time;
         } else if (check_time >= 1.2) {
-            std::cout << "No connection!" << std::endl;
+           // std::cout << "No connection!" << std::endl;
             isConnection = 0;
             // stop robot when connection lost
             robot.left_wheel_velocity_ref = 0;
@@ -538,7 +547,7 @@ void play(int number_of_traffic_cones, QString serialport, QString mode) {
             data.clear();
         }
 
-        std::cout << robot.x << ", " << robot.y << std::endl;
+        //std::cout << robot.x << ", " << robot.y << std::endl;
 
         // save time of last loop
         prev_time = clk.restart().asSeconds();

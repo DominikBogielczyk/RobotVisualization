@@ -18,7 +18,7 @@ public:
     const double track_between_wheels = 10.0;
 
     // parameters of robot position and orientation
-    float start_x = 450;
+    float start_x = 0;
     float start_y = 0;
     float x = start_x;
     float y = start_y;
@@ -26,8 +26,8 @@ public:
     float prev_y = y;
     float rot_z_0_360 = 0;
     float rot_z = 0;
-    float x_ref = 300;
-    float y_ref = 300;
+    float x_ref = 0;
+    float y_ref = 0;
 
     // parameters of robot velocities
     float left_wheel_velocity = 0.0;
@@ -78,12 +78,16 @@ public:
     float w2_right = (a1*u1_right - b1*w1_right)/b2;
 
     // parameters to plot
-    float wl_tab[100];
-    float wp_tab[100];
-    float w_tab[100];
-    float v_tab[100];
-    float x_tab[100];
-    float y_tab[100];
+    float wl_tab[200] = {0.0};
+    float wp_tab[200] = {0.0};
+    float wlref_tab[200] = {0.0};
+    float wpref_tab[200] = {0.0};
+    float uL_tab[200] = {0.0};
+    float uR_tab[200] = {0.0};
+    float x_tab[200] = {0.0};
+    float y_tab[200] = {0.0};
+    float xref_tab[200] = {0.0};
+    float yref_tab[200] = {0.0};
 
     Robot();
 
