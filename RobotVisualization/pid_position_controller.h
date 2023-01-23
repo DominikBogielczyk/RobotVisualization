@@ -2,7 +2,7 @@
 #define PID_POSITION_CONTROLLER_H
 #include <headers.h>
 
-class PID_position_controller
+class Position_controller
 {
 public:
     // parameters for position controller
@@ -16,10 +16,10 @@ public:
     float start_x = 450;
     float start_y = 0;
 
-    PID_position_controller();
+    Position_controller();
 
     // parameters which return wheels referance angular velocities from position regulator
-    std::tuple<float,float> PID_position_control_3(float y_ref, float x_ref, float y, float x, float rot, float L, float R);
+    std::tuple<float,float> position_control(float y_ref, float x_ref, float y, float x, float rot, float L, float R);
 };
 
 #endif // PID_POSITION_CONTROLLER_H

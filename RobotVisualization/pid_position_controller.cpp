@@ -1,11 +1,11 @@
 #include "pid_position_controller.h"
 
-PID_position_controller::PID_position_controller()
+Position_controller::Position_controller()
 {
 
 }
 
-std::tuple<float,float> PID_position_controller::PID_position_control_3(float y_ref, float x_ref, float y, float x, float rot, float L, float R){
+std::tuple<float,float> Position_controller::position_control(float y_ref, float x_ref, float y, float x, float rot, float L, float R){
 
     // trajectory generate
     if(stop==0){

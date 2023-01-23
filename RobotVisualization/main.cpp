@@ -190,7 +190,7 @@ void play(int number_of_traffic_cones, QString serialport, QString mode) {
     // creating regulators for velocity and position control
     PID_controller pid_controller;
 
-    PID_position_controller pid_position_controller;
+    Position_controller pid_position_controller;
 
     // setting background color
     glClearColor(0, 0, 0, 1);
@@ -329,7 +329,7 @@ void play(int number_of_traffic_cones, QString serialport, QString mode) {
         // checking what type of control is set
         if (control_type == position_control) {
             // robot position control which return reference angular velocities of wheels
-            std::tie(robot.left_wheel_velocity_ref, robot.right_wheel_velocity_ref) = pid_position_controller.PID_position_control_3(robot.y_ref, robot.x_ref, robot.y, robot.x, robot.rot_z, robot.track_between_wheels, robot.wheel_radius);
+            std::tie(robot.left_wheel_velocity_ref, robot.right_wheel_velocity_ref) = pid_position_controller.position_control(robot.y_ref, robot.x_ref, robot.y, robot.x, robot.rot_z, robot.track_between_wheels, robot.wheel_radius);
 
             // set robot wheels voltages in position control
             robot.u_left = pid_controller.PID_wheel_control(robot.left_wheel_velocity_ref, robot.left_wheel_velocity, "left");
