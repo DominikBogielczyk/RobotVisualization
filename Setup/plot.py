@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
+from matplotlib.patches import Rectangle
 
 fig, plot = plt.subplots(2, 2, constrained_layout=True)
 fig2, plot2 = plt.subplots(2, 2, constrained_layout=True)
@@ -49,12 +50,12 @@ def animate(counter):
     plot[0][0].axis(xmin=min(t), xmax=max(t))
     plot[0][0].plot(t, ωL_list, 'b')
     plot[0][0].plot(t, ωLref_list, 'r')
-    plot[0][0].legend(['ωL', 'ωLref'])
+    plot[0][0].legend(['$ω_{L}$', '$ω_{Lref}$'])
   
     plot[0][1].clear()
     plot[0][1].set_title('SYGNAŁ STERUJĄCY - KOŁO LEWE')
     plot[0][1].set_xlabel('t [s]')
-    plot[0][1].set_ylabel('uL [V]')
+    plot[0][1].set_ylabel('$u_{L}$ [V]')
     plot[0][1].axis(xmin=min(t), xmax=max(t))
     plot[0][1].plot(t, uL_list, 'g')
 
@@ -65,12 +66,12 @@ def animate(counter):
     plot[1][0].axis(xmin=min(t), xmax=max(t))
     plot[1][0].plot(t, ωP_list, 'b')
     plot[1][0].plot(t, ωPref_list, 'r')
-    plot[1][0].legend(['ωP', 'ωPref'])
+    plot[1][0].legend(['$ω_{P}$', '$ω_{Pref}$'])
    
     plot[1][1].clear()
     plot[1][1].set_title('SYGNAŁ STERUJĄCY - KOŁO PRAWE')
     plot[1][1].set_xlabel('t [s]')
-    plot[1][1].set_ylabel('uR [V]')
+    plot[1][1].set_ylabel('$u_{R}$ [V]')
     plot[1][1].axis(xmin=min(t), xmax=max(t))
     plot[1][1].plot(t, uR_list, 'g')
     
@@ -84,7 +85,7 @@ def animate2(counter):
     plot2[0][0].grid()
     plot2[0][0].plot(t, x_list, 'b')
     plot2[0][0].plot(t, xref_list, 'r')
-    plot2[0][0].legend(['x', 'x_ref'])
+    plot2[0][0].legend(['x', '$x_{ref}$'])
     
     plot2[0][1].clear()
     plot2[0][1].set_title('POZYCJA XY ROBOTA')
@@ -103,16 +104,18 @@ def animate2(counter):
     plot2[1][0].grid()
     plot2[1][0].plot(t, y_list, 'b')
     plot2[1][0].plot(t, yref_list, 'r')
-    plot2[1][0].legend(['y', 'y_ref'])
+    plot2[1][0].legend(['y', '$y_{ref}$'])
     
     plot2[1][1].clear()
     plot2[1][1].set_title('ROBOT W POKOJU')
     plot2[1][1].set_xlabel('pozycja x [cm]')
     plot2[1][1].set_ylabel('pozycja y [cm]')
-    plot2[1][1].axis(xmin=-600, xmax=600)
-    plot2[1][1].axis(ymin=-400, ymax=400)
+    plot2[1][1].axis(xmin=-700, xmax=700)
+    plot2[1][1].axis(ymin=-500, ymax=500)
     plot2[1][1].grid()
     plot2[1][1].plot(x_list, y_list, 'g')
+    plot2[1][1].add_patch(Rectangle((-600, -400), 1200, 800, edgecolor='blue', fill=False, lw=4))
+    
 
 
 a1 = animation.FuncAnimation(fig, animate, interval=1000)

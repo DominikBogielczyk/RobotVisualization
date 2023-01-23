@@ -1,0 +1,20 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+
+
+if (bluetoothSocket != null) then(true)
+if (rozmiar bufora wejściowego bluetoothSocket > 0) then (true)
+- odczytaj binarny bufor wejściowy
+- dokonaj konwersji do łańcucha znaków
+if (skonwertowany tekst zawiera 'collision') then (true)
+- czerwony komunikat "Colission !!!"
+elseif (skonwertowany tekst zawiera 'ok') then (true)
+- zielony komunikat "OK"
+endif
+if (skonwertowany tekst zawiera cyfrę) then (true)
+- wyznacz oraz wyświetl opóźnienie
+endif
+
+
+
+@enduml

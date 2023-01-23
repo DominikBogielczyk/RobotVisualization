@@ -1,0 +1,72 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+
+class ConfigurationActivity{
+bluetoothAdapter: BluetoothAdapter?
+
+companion object{
+choosenAddress: String
+choosenName: String}
+
+onCreate()
+onActivityResult()
+turnOn()
+turnOff()
+listDevices()
+}
+
+class MainActivity{
+companion object{
+var myUUID: UUID
+var bluetoothSocket: BluetoothSocket? = null
+progressDialog: ProgressDialog
+bluetoothAdapter: BluetoothAdapter
+isConnected: Boolean
+clientAddress: String
+clientName: String}
+
+cmdIndex: Int
+cmdTime: Long
+velocityLeft: Float
+velocityRight: Float
+extraDelay: Long
+xPosition: Int
+yPosition: Int
+onCreate()
+sendFromSlider()
+onTouch()
+sendCommand(cmd: String)
+readCommand()
+disconnect()
+stop()
+changeVisibility()
+ok()
+okxy()
+readAndcheckTimer()
+
+private inner class ConnectThread
+}
+
+Interface readAndcheckTimer
+{
+object : CountDownTimer(1000, 1)
+onTick()
+onFinish()
+}
+
+class ConnectThread
+{
+connectSuccess: Boolean
+context: Context
+
+onPreExecute()
+doInBackground(vararg p0: Void?)
+onPostExecute(result: String?)
+}
+
+MainActivity <|-- ConfigurationActivity
+MainActivity <|-- ConnectThread
+MainActivity <|-- readAndcheckTimer
+
+@enduml

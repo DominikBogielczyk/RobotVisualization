@@ -7,17 +7,19 @@ y = [17.79 18.14; 19.16 18.56; 19.39, 18.76; 22.07 19.48; 20.91 18.80; 22.94 22.
 
 figure()
 bar(X,y)
-legend(["Dominik","Micha³"])
-xlabel("Dodatkowe opóŸnienie")
-ylabel("t [s]")
-title("Porównanie czasów przejazdu toru")
+set(gca,'FontSize', 12)
+legend(["Dominik","Micha³"],'FontSize', 14)
+xlabel("Dodatkowe opóŸnienie", 'FontSize', 14)
+ylabel("t [s]", 'FontSize', 14)
+title("Porównanie czasów przejazdu toru",'FontSize', 18)
 grid on
 
 y2 = [0 10;0 20;0 10;10 10;0 10;10 30;30 20;40 40;30 40;40 40;50 70];
 figure()
 bar(X,y2)
-legend(["Dominik","Micha³"])
-xlabel("Dodatkowe opóŸnienie")
-ylabel("Czêstoœæ kolizji [%]")
-title("Porównanie czêstoœci kolizji")
+set(gca,'FontSize', 12)
+legend(["Dominik","Micha³"],'FontSize', 14)
+xlabel("Dodatkowe opóŸnienie", 'FontSize', 14)
+ylabel("Czêstoœæ kolizji [%]", 'FontSize', 14)
+title("Porównanie czêstoœci kolizji", 'FontSize', 18)
 grid on

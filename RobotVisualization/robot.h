@@ -18,7 +18,7 @@ public:
     const double track_between_wheels = 10.0;
 
     // parameters of robot position and orientation
-    float start_x = 0;
+    float start_x = 450;
     float start_y = 0;
     float x = start_x;
     float y = start_y;
@@ -26,7 +26,7 @@ public:
     float prev_y = y;
     float rot_z_0_360 = 0;
     float rot_z = 0;
-    float x_ref = 0;
+    float x_ref = 450;
     float y_ref = 0;
 
     // parameters of robot velocities
