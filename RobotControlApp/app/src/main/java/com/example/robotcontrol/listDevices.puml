@@ -1,0 +1,23 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+
+:uruchomienie aktywności ConfigurationActivity;
+if (Przycisk 'Paired Devices' kliknięty) then(true)
+if (permission.BLUETOOTH) then (true)
+  :Wyświetl sparowane urządzenia (nazwa, adres MAC);
+  if (Widget listView kliknięty) then (true)
+    :nowa Intencja:
+    MainActivity
+    with Extras(
+    choosenAddress,
+    choosenName);
+    :uruchomienie aktywności MainActivity;
+    else (false)
+      stop
+  endif
+else (false)
+stop
+endif
+
+
+@enduml

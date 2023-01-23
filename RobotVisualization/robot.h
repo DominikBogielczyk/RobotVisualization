@@ -84,9 +84,9 @@ public:
     float wpref_tab[200] = {0.0};
     float uL_tab[200] = {0.0};
     float uR_tab[200] = {0.0};
-    float x_tab[200] = {450.0};
+    float x_tab[200] = {0.0};
     float y_tab[200] = {0.0};
-    float xref_tab[200] = {450.0};
+    float xref_tab[200] = {0.0};
     float yref_tab[200] = {0.0};
 
     Robot();

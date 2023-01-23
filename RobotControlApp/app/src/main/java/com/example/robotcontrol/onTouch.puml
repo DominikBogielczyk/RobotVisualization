@@ -1,0 +1,18 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+
+
+if (event?.action == MotionEvent.ACTION_DOWN) then(true)
+:-ustaw kolor wciśniętego przycisku na pomarańczowy
+-prześlij komendę sterującą podaną jako argument funkcji;
+else if (event?.action == MotionEvent.ACTION_UP) then(true)
+:-ustaw kolor wciśniętego przycisku na niebieski;
+if (sendStop) then(true)
+:-prześlij komendę zerującą prędkość;
+else (false)
+stop
+endif
+
+
+
+@enduml
